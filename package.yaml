@@ -1,0 +1,51 @@
+name:                news-server
+version:             0.1.0.0
+github:              "mrRomanovsky/news-server"
+license:             BSD3
+author:              "Andrew Romanovsky"
+maintainer:          "rmansorokin@gmail.com"
+copyright:           "2018 Andrew Romanovsky"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/news-server#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- warp
+- wai
+- http-types
+
+library:
+  source-dirs: src
+
+executables:
+  news-server-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - news-server
+
+tests:
+  news-server-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - news-server

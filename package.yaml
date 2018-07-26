@@ -25,6 +25,7 @@ dependencies:
 - wai
 - http-types
 - bytestring
+- text
 
 library:
   source-dirs:

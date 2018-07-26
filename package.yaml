@@ -24,6 +24,7 @@ dependencies:
 - warp
 - wai
 - http-types
+- bytestring
 
 library:
   source-dirs: src

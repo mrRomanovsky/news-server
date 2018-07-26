@@ -27,7 +27,9 @@ dependencies:
 - bytestring
 
 library:
-  source-dirs: src
+  source-dirs:
+    - src
+    - src/models
 
 executables:
   news-server-exe:

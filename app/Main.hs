@@ -2,6 +2,7 @@
 
 module Main where
 
+import User
 import Network.Wai
 import Network.HTTP.Types (status200)
 import Network.Wai.Handler.Warp (run)

@@ -1,10 +1,17 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Author where
 
 import User
 import Model
-import qualified Data.ByteString.Lazy as B
+import Data.Aeson
+import GHC.Generics
+import Data.Text
 
-data Author = Author {user :: User, desc :: B.ByteString}
+data Author = Author {user :: User, desc :: Text} deriving (Show, Generic)
+
+instance FromJSON Author
+instance ToJSON Author
 
 instance Model Author where
   create _ = return ()

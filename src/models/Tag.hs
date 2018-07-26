@@ -3,9 +3,9 @@
 module Tag where
 
 import Model
-import qualified Data.ByteString.Lazy as B
+import Data.Text
 
-type Tag = B.ByteString
+type Tag = Text
 
 instance Model Tag where
   create _ = return ()

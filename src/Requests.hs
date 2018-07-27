@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Requests where
+module Requests (processAppRequest) where
 
 import qualified Post as P
 import qualified User as U
@@ -14,6 +14,10 @@ import qualified Data.ByteString.Lazy as B
 
 ----type Application = Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 
+data AppRequest = AppUsersRequest UsersRequest | AppAuthorsRequest AuthorsRequest |
+                  AppCategoriesRequest CategoriesRequest | AppPostsRequest PostsRequest |
+                  AppCommentsRequest CommentsRequest
+
 data UsersRequest = CreateUser U.User | GetUsers
 
 data AuthorsRequest = CreateAuthor A.Author | GetAuthors | UpdateAuthor A.Author A.Author
@@ -23,6 +27,15 @@ data CategoriesRequest = CreateCategory C.Category | GetCategories | UpdateCateg
 data PostsRequest = GetPosts | GetPostsBy (P.Post -> Bool)
 
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
+
+processAppRequest :: [Text] -> Response
+processAppRequest path = case parseAppRequest path of
+  (Just (AppUsersRequest usersRequest)) -> processUsersRequest usersRequest
+  Nothing                               -> notImplementedFeature
+
+parseAppRequest :: [Text] -> Maybe AppRequest
+parseAppRequest ["users"] = Just $ AppUsersRequest GetUsers
+parseAppRequest _         = Nothing
 
 user1 = U.User "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" "22.22.22" False
 

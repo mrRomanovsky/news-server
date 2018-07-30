@@ -40,19 +40,6 @@ instance FromJSON User where
   parseJSON _ = mzero
 -}
 
-
-{-
-data MyData = MyData {
-  id :: Int,
-  something :: Maybe String
-}
-
-instance ToJSON MyData where
-  toJSON (MyData id something) =
-    object ["id" .= id
-      , "something" .= ???
-    ]
--}
 --getLocTimestamp :: B.ByteString -> T.LocalTimestamp
 getLocTimestamp = either undefined id . T.parseLocalTimestamp
 

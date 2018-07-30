@@ -23,6 +23,16 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+deleteUser :: Integer -> IO ()
+deleteUser uId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "DELETE FROM users WHERE users_id=?" [uId]
+  return ()
+
 insertUser :: User -> IO ()
 insertUser User{User.name = n, User.surname = s, User.avatar = a} = do
   conn <- connect defaultConnectInfo {
@@ -32,17 +42,13 @@ insertUser User{User.name = n, User.surname = s, User.avatar = a} = do
   }
   execute conn "INSERT INTO users(users_name, users_surname, avatar, is_admin) values (?, ?, ?, FALSE)"
              (n, s, a)
-  return ()
+  return () --maybe I should do something with execute to remove this "return"
 
 getUsers = getRecords "users" :: IO [User]
 getCategories = getRecords "categories" :: IO [Category]
 getPosts = getRecords "posts" :: IO [Post]
 getTags = getRecords "tags" :: IO [Tag]
 getAuthors = getRecords "authors" :: IO [Author]
-{-
-putStrLn "3 + 5"
-mapM_ print =<< ( query conn "select ? + ?" (3 :: Int, 5 :: Int) :: IO [Only Int] )
--}
 
 getRecords :: FromRow m => Text -> IO [m]
 getRecords table = do
@@ -52,13 +58,3 @@ getRecords table = do
     , connectPassword = "news-server" 
   }
   query conn "SELECT * FROM ?" [Identifier table] -- $ Identifier table
-
-{-getUsers :: IO [User]
-getUsers = do
-  conn <- connect defaultConnectInfo {
-      connectDatabase = "news-server"
-    , connectUser = "news-server"
-    , connectPassword = "news-server" 
-  }
-  query conn "SELECT * FROM ?" (Only ("users" :: Text)) :: IO [User]-}
-  --query_ conn "SELECT * FROM users" :: IO [User]

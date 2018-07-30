@@ -9,14 +9,14 @@ import qualified Author as A
 import qualified Category as C
 import DbRequests
 import Data.Text
+import Data.Text.Encoding (decodeUtf8)
 import Data.Aeson
+import Data.Attoparsec.Text
 import Network.Wai
 import Network.HTTP.Types (status200)
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple.Time
 import Database.PostgreSQL.Simple.FromRow
-
-----type Application = Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 
 data AppRequest = AppUsersRequest UsersRequest | AppAuthorsRequest AuthorsRequest |
                   AppCategoriesRequest CategoriesRequest | AppPostsRequest PostsRequest |
@@ -36,11 +36,33 @@ data TagsRequest = GetTags
 
 processPostRequest :: Request -> IO Response
 processPostRequest r = case pathInfo r of
-  ["users"] -> processPostUser =<< strictRequestBody r
+  ["users"] -> postUser =<< strictRequestBody r
+  ["users", "delete"] -> deleteUserBs =<< strictRequestBody r
   _         -> return notImplementedFeature
 
-processPostUser :: B.ByteString -> IO Response
-processPostUser b = do
+deleteUserBs :: B.ByteString -> IO Response
+deleteUserBs b = do
+  let uId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing Id: " ++ e) deleteUser uId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "User was successfully deleted from the database"
+
+{-
+    case parseOnly textList (decodeUtf8 bs) of
+      Left err -> returnError ConversionFailed f err
+      Right tags -> return tags
+
+textList :: Parser [Text]
+textList = do
+  char '{'
+  many1 textComma
+ -- char '}'
+ -- return elems
+-}
+
+postUser :: B.ByteString -> IO Response
+postUser b = do
   let user = eitherDecode b :: Either String U.User
   either (\e -> print $ "error parsing user: " ++ e) insertUser user
   return $ 
@@ -62,8 +84,6 @@ parseAppRequest ["categories"] = Just $ AppCategoriesRequest GetCategories
 parseAppRequest ["tags"] = Just $ AppTagsRequest GetTags
 parseAppRequest _         = Nothing
 
---parseLocalTimestamp
-
 user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False
 
 tempUsers = [ user1, user1{U.userId = 2, U.name = "Test User 2", U.surname = "Test Surname 2"}
@@ -72,7 +92,6 @@ tempUsers = [ user1, user1{U.userId = 2, U.name = "Test User 2", U.surname = "Te
 processUsersRequest :: UsersRequest -> IO Response
 processUsersRequest (CreateUser _) = return notImplementedFeature
 processUsersRequest GetUsers = respondJson <$> getUsers
---  responseLBS status200 [("Content-Type", "application/json")] . encode <$> getUsers
 
 processAuthorsRequest :: AuthorsRequest -> IO Response
 processAuthorsRequest GetAuthors = respondJson <$> getAuthors
@@ -91,11 +110,8 @@ processCommentsRequest _ = return notImplementedFeature
 
 processTagsRequest :: TagsRequest -> IO Response
 processTagsRequest GetTags = respondJson <$> getTags
---processTagsRequest _ = return notImplementedFeature
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode
 
 notImplementedFeature = responseLBS status200 [("Content-Type", "text/plain")] "This feature is not yet implemented"
-
---data TagsRequest = CreateTag Tag | UpdateTag Tag Tag | 

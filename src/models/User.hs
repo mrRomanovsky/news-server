@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module User where
 
@@ -62,7 +63,9 @@ instance FromJSON T.LocalTimestamp where
 instance ToJSON T.LocalTimestamp where
   toJSON = String . toStrict . decodeUtf8 . toLazyByteString . T.localTimestampToBuilder
 
-instance FromJSON User
+instance FromJSON User where
+  parseJSON (Object v) = User (-1) <$> v .: "name" <*> v .: "surname"
+    <*> v .: "avatar" <*> (pure $ getLocTimestamp "2017-07-28 14:14:14") <*> pure False --replace default data with maybe
 instance ToJSON User
 
 instance Model User where

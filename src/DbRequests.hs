@@ -18,11 +18,21 @@ dbTest = do
   conn <- connect defaultConnectInfo {
       connectDatabase = "news-server"
     , connectUser = "news-server"
-    , connectPassword = "PUT_YOUR_PASSWORD_HERE" 
+    , connectPassword = "news-server" 
   }
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+insertUser :: User -> IO ()
+insertUser User{User.name = n, User.surname = s, User.avatar = a} = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "INSERT INTO users(users_name, users_surname, avatar, is_admin) values (?, ?, ?, FALSE)"
+             (n, s, a)
+  return ()
 
 getUsers = getRecords "users" :: IO [User]
 getCategories = getRecords "categories" :: IO [Category]

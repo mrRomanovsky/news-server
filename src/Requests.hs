@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Requests (processAppRequest) where
+module Requests (processAppRequest, processPostRequest) where
 
 import qualified Tag as T
 import qualified Post as P
@@ -33,6 +33,19 @@ data PostsRequest = GetPosts | GetPostsBy (P.Post -> Bool)
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
 
 data TagsRequest = GetTags
+
+processPostRequest :: Request -> IO Response
+processPostRequest r = case pathInfo r of
+  ["users"] -> processPostUser =<< strictRequestBody r
+  _         -> return notImplementedFeature
+
+processPostUser :: B.ByteString -> IO Response
+processPostUser b = do
+  let user = eitherDecode b :: Either String U.User
+  either (\e -> print $ "error parsing user: " ++ e) insertUser user
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "User was successfully added to the database"
 
 processAppRequest :: [Text] -> IO Response
 processAppRequest path = case parseAppRequest path of

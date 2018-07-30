@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module User where
 
@@ -6,13 +8,59 @@ import Model
 import Data.Aeson
 import GHC.Generics
 import Data.Text
---import qualified Data.ByteString.Lazy as B
+import Database.PostgreSQL.Simple.FromRow
+import qualified Database.PostgreSQL.Simple.Time as T
+import Data.Binary.Builder (toLazyByteString)
+import Control.Monad
+import Control.Applicative
+import qualified Data.ByteString.Lazy as B
+import Data.Text.Lazy.Encoding (decodeUtf8)
+import Data.Text.Encoding (encodeUtf8)
+import Data.Text.Lazy (toStrict)
 
-data User = User {name :: Text,
+data User = User {userId :: Integer,
+                  name :: Text,
                   surname :: Text,
                   avatar :: Text,
-                  creation_time :: Text,
+                  creationTime :: T.LocalTimestamp,
                   isAdmin :: Bool} deriving (Show, Generic)
+
+{-
+instance FromRow Present where
+  fromRow = Present <$> field
+
+instance FromRow Child where
+  fromRow = Child <$> field <*> liftM2 Location field field}
+-}
+
+{-
+instance FromJSON User where
+  parseJSON (Object v) = User <$> v .: "id" <*> v .: "first_name"
+  parseJSON _ = mzero
+-}
+
+
+{-
+data MyData = MyData {
+  id :: Int,
+  something :: Maybe String
+}
+
+instance ToJSON MyData where
+  toJSON (MyData id something) =
+    object ["id" .= id
+      , "something" .= ???
+    ]
+-}
+--getLocTimestamp :: B.ByteString -> T.LocalTimestamp
+getLocTimestamp = either undefined id . T.parseLocalTimestamp
+
+instance FromJSON T.LocalTimestamp where
+  parseJSON (String t) = return $ getLocTimestamp $ encodeUtf8 t
+  parseJSON _          = mzero
+
+instance ToJSON T.LocalTimestamp where
+  toJSON = String . toStrict . decodeUtf8 . toLazyByteString . T.localTimestampToBuilder
 
 instance FromJSON User
 instance ToJSON User
@@ -22,6 +70,9 @@ instance Model User where
   read = return []
   update _ _ = return ()
   delete _ = return ()
+
+instance FromRow User where
+  fromRow = User <$> field <*> field <*> field <*> field <*> field <*> field
 {-
 Пользователь
 имя

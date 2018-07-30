@@ -9,7 +9,6 @@ import Network.HTTP.Types (status200)
 import Network.Wai.Handler.Warp (run)
 
 --type Application = Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
-application request respond = 
-  respond $ processAppRequest $ pathInfo request
+application request respond = processAppRequest (pathInfo request) >>= respond
 
 main = run 3000 application

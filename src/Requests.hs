@@ -2,21 +2,25 @@
 
 module Requests (processAppRequest) where
 
+import qualified Tag as T
 import qualified Post as P
 import qualified User as U
 import qualified Author as A
 import qualified Category as C
+import DbRequests
 import Data.Text
 import Data.Aeson
 import Network.Wai
 import Network.HTTP.Types (status200)
 import qualified Data.ByteString.Lazy as B
+import Database.PostgreSQL.Simple.Time
+import Database.PostgreSQL.Simple.FromRow
 
 ----type Application = Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 
 data AppRequest = AppUsersRequest UsersRequest | AppAuthorsRequest AuthorsRequest |
                   AppCategoriesRequest CategoriesRequest | AppPostsRequest PostsRequest |
-                  AppCommentsRequest CommentsRequest
+                  AppCommentsRequest CommentsRequest | AppTagsRequest TagsRequest
 
 data UsersRequest = CreateUser U.User | GetUsers
 
@@ -28,42 +32,56 @@ data PostsRequest = GetPosts | GetPostsBy (P.Post -> Bool)
 
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
 
-processAppRequest :: [Text] -> Response
+data TagsRequest = GetTags
+
+processAppRequest :: [Text] -> IO Response
 processAppRequest path = case parseAppRequest path of
   (Just (AppUsersRequest usersRequest)) -> processUsersRequest usersRequest
-  Nothing                               -> notImplementedFeature
+  (Just (AppPostsRequest postsRequest)) -> processPostsRequest postsRequest
+  (Just (AppCategoriesRequest categoriesRequest)) -> processCategoriesRequest categoriesRequest
+  (Just (AppTagsRequest tagsRequest)) -> processTagsRequest tagsRequest
+  Nothing                               -> return notImplementedFeature
 
 parseAppRequest :: [Text] -> Maybe AppRequest
 parseAppRequest ["users"] = Just $ AppUsersRequest GetUsers
+parseAppRequest ["posts"] = Just $ AppPostsRequest GetPosts
+parseAppRequest ["categories"] = Just $ AppCategoriesRequest GetCategories
+parseAppRequest ["tags"] = Just $ AppTagsRequest GetTags
 parseAppRequest _         = Nothing
 
-user1 = U.User "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" "22.22.22" False
+--parseLocalTimestamp
 
-tempUsers = [ user1, user1{U.name = "Test User 2", U.surname = "Test Surname 2"}
-            , user1{U.name = "Test User 3", U.surname = "Test Surname 3"}]
+user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False
 
-processUsersRequest :: UsersRequest -> Response
-processUsersRequest (CreateUser _) = notImplementedFeature
-processUsersRequest GetUsers = responseLBS status200 [("Content-Type", "application/json")] $ encode tempUsers
+tempUsers = [ user1, user1{U.userId = 2, U.name = "Test User 2", U.surname = "Test Surname 2"}
+            , user1{U.userId = 3, U.name = "Test User 3", U.surname = "Test Surname 3"}]
 
-{-
-application request respond = do
-  print $ pathInfo request --array of path parts, divided with slashes, left to right
-  respond $
-    responseLBS status200 [("Content-Type", "text/plain")] "Hello Wor
--}
+processUsersRequest :: UsersRequest -> IO Response
+processUsersRequest (CreateUser _) = return notImplementedFeature
+processUsersRequest GetUsers = respondJson <$> getUsers
+--  responseLBS status200 [("Content-Type", "application/json")] . encode <$> getUsers
 
-processAuthorsRequest :: AuthorsRequest -> Response
-processAuthorsRequest = undefined
+processAuthorsRequest :: AuthorsRequest -> IO Response
+processAuthorsRequest GetAuthors = respondJson <$> getAuthors
+processAuthorsRequest _ = return notImplementedFeature
 
-processCategoriesRequest :: CategoriesRequest -> Response
-processCategoriesRequest = undefined
+processCategoriesRequest :: CategoriesRequest -> IO Response
+processCategoriesRequest GetCategories = respondJson <$> getCategories
+processCategoriesRequest _ = return notImplementedFeature
 
-processPostsRequest :: PostsRequest -> Response
-processPostsRequest = undefined
+processPostsRequest :: PostsRequest -> IO Response
+processPostsRequest GetPosts = respondJson <$> getPosts
+processPostsRequest _ = return notImplementedFeature
 
-processCommentsRequest :: CommentsRequest -> Response
-processCommentsRequest = undefined
+processCommentsRequest :: CommentsRequest -> IO Response
+processCommentsRequest _ = return notImplementedFeature
+
+processTagsRequest :: TagsRequest -> IO Response
+processTagsRequest GetTags = respondJson <$> getTags
+--processTagsRequest _ = return notImplementedFeature
+
+respondJson :: ToJSON m => [m] -> Response
+respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode
 
 notImplementedFeature = responseLBS status200 [("Content-Type", "text/plain")] "This feature is not yet implemented"
 

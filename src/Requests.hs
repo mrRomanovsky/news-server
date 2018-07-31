@@ -20,7 +20,7 @@ import Database.PostgreSQL.Simple.FromRow
 
 data AppRequest = AppUsersRequest UsersRequest | AppAuthorsRequest AuthorsRequest |
                   AppCategoriesRequest CategoriesRequest | AppPostsRequest PostsRequest |
-                  AppCommentsRequest CommentsRequest | AppTagsRequest TagsRequest
+                  AppCommentsRequest CommentsRequest | AppTagsRequest TagsRequest | AppDraftsRequest DraftsRequest
 
 data UsersRequest = CreateUser U.User | GetUsers
 
@@ -33,6 +33,8 @@ data PostsRequest = GetPosts | GetPostsBy (P.Post -> Bool)
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
 
 data TagsRequest = GetTags
+
+data DraftsRequest = GetDrafts
 
 processPostRequest :: Request -> IO Response
 processPostRequest r = case pathInfo r of
@@ -144,6 +146,7 @@ processAppRequest path = case parseAppRequest path of
   (Just (AppCategoriesRequest categoriesRequest)) -> processCategoriesRequest categoriesRequest
   (Just (AppTagsRequest tagsRequest)) -> processTagsRequest tagsRequest
   (Just (AppAuthorsRequest authorsRequest)) -> processAuthorsRequest authorsRequest
+  (Just (AppDraftsRequest draftsRequest)) -> processDraftsRequest draftsRequest
   Nothing                               -> return notImplementedFeature
 
 parseAppRequest :: [Text] -> Maybe AppRequest
@@ -152,6 +155,7 @@ parseAppRequest ["posts"] = Just $ AppPostsRequest GetPosts
 parseAppRequest ["categories"] = Just $ AppCategoriesRequest GetCategories
 parseAppRequest ["tags"] = Just $ AppTagsRequest GetTags
 parseAppRequest ["authors"] = Just $ AppAuthorsRequest GetAuthors
+parseAppRequest ["drafts"] = Just $ AppDraftsRequest GetDrafts
 parseAppRequest _         = Nothing
 
 user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False
@@ -177,6 +181,9 @@ processPostsRequest _ = return notImplementedFeature
 
 processCommentsRequest :: CommentsRequest -> IO Response
 processCommentsRequest _ = return notImplementedFeature
+
+processDraftsRequest :: DraftsRequest -> IO Response
+processDraftsRequest GetDrafts = respondJson <$> getDrafts
 
 processTagsRequest :: TagsRequest -> IO Response
 processTagsRequest GetTags = respondJson <$> getTags

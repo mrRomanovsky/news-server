@@ -6,6 +6,7 @@ import User
 import Author
 import Category
 import Post
+import Draft
 import Tag
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Types
@@ -147,6 +148,7 @@ getCategories = getRecords "categories" :: IO [Category]
 getPosts = getRecords "posts" :: IO [Post]
 getTags = getRecords "tags" :: IO [Tag]
 getAuthors = getRecords "authors" :: IO [Author]
+getDrafts = getRecords "drafts" :: IO [Draft]
 
 getRecords :: FromRow m => Text -> IO [m]
 getRecords table = do

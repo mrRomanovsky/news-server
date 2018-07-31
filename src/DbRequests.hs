@@ -23,6 +23,19 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+updateTag :: Tag -> IO ()
+updateTag Tag{Tag.tagId = tId, Tag.tagName = tName} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?"
+           (tName, tId)
+  return () --maybe I should do something with execute to remove this "return"
+
+--UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';
+
 deleteTag :: Integer -> IO ()
 deleteTag tId = do
   conn <- connect defaultConnectInfo {

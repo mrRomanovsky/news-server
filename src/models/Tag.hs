@@ -15,6 +15,7 @@ import Database.PostgreSQL.Simple.FromField
 
 data Tag = Tag {tagId :: Integer, tagName :: Text} deriving (Show, Generic)
 
+
 {-
   parseJSON (Object v) = User <$> v .: "id" <*> v .: "first_name"
   parseJSON _ = mzero
@@ -22,7 +23,7 @@ data Tag = Tag {tagId :: Integer, tagName :: Text} deriving (Show, Generic)
 
 instance ToJSON Tag
 instance FromJSON Tag where
-  parseJSON (Object v) = Tag (-1) <$> v .: "tagName"
+  parseJSON (Object v) = Tag <$> (v .: "tagId" <|> pure (-1)) <*> v .: "tagName"
   parseJSON _ = mzero
 
 

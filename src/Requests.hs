@@ -40,8 +40,17 @@ processPostRequest r = case pathInfo r of
   ["users", "delete"] -> deleteUserBs =<< strictRequestBody r
   ["tags"] -> postTag =<< strictRequestBody r
   ["tags", "delete"] -> deleteTagBs =<< strictRequestBody r
+  ["tags", "update"] -> updateTagBs =<< strictRequestBody r
   _         -> return notImplementedFeature
 
+updateTagBs :: B.ByteString -> IO Response
+updateTagBs b = do
+  let tag = eitherDecode b :: Either String T.Tag
+  either (\e -> print $ "error parsing tag: " ++ e) updateTag tag
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Tag was successfully updated"
+  
 deleteTagBs :: B.ByteString -> IO Response
 deleteTagBs b = do
   let tId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer

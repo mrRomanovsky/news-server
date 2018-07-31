@@ -23,6 +23,40 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+updateAuthor :: Author -> IO ()
+updateAuthor Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE authors SET users_id=?, author_desc=? WHERE author_id=?"
+           (uId, aDesc, aId)
+  return () --maybe I should do something with execute to remove this "return"
+
+deleteAuthor :: Integer -> IO ()
+deleteAuthor aId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "DELETE FROM authors WHERE author_id=?" [aId]
+  return ()
+
+{-{authorId, userId :: Integer, desc :: Text}-}
+
+insertAuthor :: Author -> IO ()
+insertAuthor Author{Author.userId = uId, Author.desc = aDesc} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "INSERT INTO authors(users_id, author_desc) values (?,?)"
+           (uId, aDesc)
+  return () --maybe I should do something with execute to remove this "return"
+
 updateCategory :: Category -> IO ()
 updateCategory Category{Category.categoryId = cId, Category.name = n, Category.parentId = pId} = do
   conn <- connect defaultConnectInfo {

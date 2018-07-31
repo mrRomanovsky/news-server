@@ -38,6 +38,9 @@ processPostRequest :: Request -> IO Response
 processPostRequest r = case pathInfo r of
   ["users"] -> postUser =<< strictRequestBody r
   ["users", "delete"] -> deleteUserBs =<< strictRequestBody r
+  ["authors"] -> postAuthor =<< strictRequestBody r
+  ["authors", "delete"] -> deleteAuthorBs =<< strictRequestBody r
+  ["authors", "update"] -> updateAuthorBs =<< strictRequestBody r
   ["tags"] -> postTag =<< strictRequestBody r
   ["tags", "delete"] -> deleteTagBs =<< strictRequestBody r
   ["tags", "update"] -> updateTagBs =<< strictRequestBody r
@@ -45,6 +48,30 @@ processPostRequest r = case pathInfo r of
   ["categories", "delete"] -> deleteCategoryBs =<< strictRequestBody r
   ["categories", "update"] -> updateCategoryBs =<< strictRequestBody r
   _         -> return notImplementedFeature
+
+updateAuthorBs :: B.ByteString -> IO Response
+updateAuthorBs b = do
+  let author = eitherDecode b :: Either String A.Author
+  either (\e -> print $ "error parsing author: " ++ e) updateAuthor author
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Author was successfully updated"
+  
+deleteAuthorBs :: B.ByteString -> IO Response
+deleteAuthorBs b = do
+  let aId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing author id: " ++ e) deleteAuthor aId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Author was successfully deleted from the database"
+
+postAuthor :: B.ByteString -> IO Response
+postAuthor b = do
+  let author = eitherDecode b :: Either String A.Author
+  either (\e -> print $ "error parsing category: " ++ e) insertAuthor author
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Author was successfully added to the database"
 
 updateCategoryBs :: B.ByteString -> IO Response
 updateCategoryBs b = do
@@ -116,6 +143,7 @@ processAppRequest path = case parseAppRequest path of
   (Just (AppPostsRequest postsRequest)) -> processPostsRequest postsRequest
   (Just (AppCategoriesRequest categoriesRequest)) -> processCategoriesRequest categoriesRequest
   (Just (AppTagsRequest tagsRequest)) -> processTagsRequest tagsRequest
+  (Just (AppAuthorsRequest authorsRequest)) -> processAuthorsRequest authorsRequest
   Nothing                               -> return notImplementedFeature
 
 parseAppRequest :: [Text] -> Maybe AppRequest
@@ -123,6 +151,7 @@ parseAppRequest ["users"] = Just $ AppUsersRequest GetUsers
 parseAppRequest ["posts"] = Just $ AppPostsRequest GetPosts
 parseAppRequest ["categories"] = Just $ AppCategoriesRequest GetCategories
 parseAppRequest ["tags"] = Just $ AppTagsRequest GetTags
+parseAppRequest ["authors"] = Just $ AppAuthorsRequest GetAuthors
 parseAppRequest _         = Nothing
 
 user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False

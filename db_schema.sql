@@ -67,7 +67,7 @@ CREATE TABLE posts (
   post_name TEXT NOT NULL,
   creation_time timestamp default current_timestamp,
   author_id integer references authors,
-  category_id integer references authors,
+  category_id integer references categories,
   tags text[],
   text_content text NOT NULL,
   main_photo text NOT NULL,
@@ -81,6 +81,12 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
   array['tag1', 'tag2', 'tag3'], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2']);
+
+CREATE TABLE drafts (
+  draft_id SERIAL PRIMARY KEY,
+  post_id INTEGER REFERENCES posts,
+  draft_text TEXT NOT NULL
+);
 
 CREATE TABLE comments (
   comment_id serial PRIMARY KEY,

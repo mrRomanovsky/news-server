@@ -25,7 +25,14 @@ dbTest = do
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
 publishDraft :: Integer -> IO ()
-publishDraft = undefined
+publishDraft dId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE posts SET text_content = (SELECT draft_text FROM drafts WHERE draft_id=?)" [dId]
+  return ()
 
 updateDraft :: Draft -> IO ()
 updateDraft Draft{draftId = dId, Draft.postId = pId, draftText = dText} = do

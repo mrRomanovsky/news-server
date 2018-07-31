@@ -41,7 +41,34 @@ processPostRequest r = case pathInfo r of
   ["tags"] -> postTag =<< strictRequestBody r
   ["tags", "delete"] -> deleteTagBs =<< strictRequestBody r
   ["tags", "update"] -> updateTagBs =<< strictRequestBody r
+  ["categories"] -> postCategory =<< strictRequestBody r
+  ["categories", "delete"] -> deleteCategoryBs =<< strictRequestBody r
+  ["categories", "update"] -> updateCategoryBs =<< strictRequestBody r
   _         -> return notImplementedFeature
+
+updateCategoryBs :: B.ByteString -> IO Response
+updateCategoryBs b = do
+  let category = eitherDecode b :: Either String C.Category
+  either (\e -> print $ "error parsing category: " ++ e) updateCategory category
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Category was successfully updated"
+  
+deleteCategoryBs :: B.ByteString -> IO Response
+deleteCategoryBs b = do
+  let tId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing category id: " ++ e) deleteCategory tId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Category was successfully deleted from the database"
+
+postCategory :: B.ByteString -> IO Response
+postCategory b = do
+  let tag = eitherDecode b :: Either String C.Category
+  either (\e -> print $ "error parsing category: " ++ e) insertCategory tag
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Category was successfully added to the database"
 
 updateTagBs :: B.ByteString -> IO Response
 updateTagBs b = do
@@ -59,14 +86,6 @@ deleteTagBs b = do
     responseLBS status200 [("Content-Type", "application/json")]
       "Tag was successfully deleted from the database"
 
-deleteUserBs :: B.ByteString -> IO Response
-deleteUserBs b = do
-  let uId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
-  either (\e -> print $ "error parsing user id: " ++ e) deleteUser uId
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "User was successfully deleted from the database"
-
 postTag :: B.ByteString -> IO Response
 postTag b = do
   let tag = eitherDecode b :: Either String T.Tag
@@ -75,6 +94,13 @@ postTag b = do
     responseLBS status200 [("Content-Type", "application/json")]
       "Tag was successfully added to the database"
 
+deleteUserBs :: B.ByteString -> IO Response
+deleteUserBs b = do
+  let uId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing user id: " ++ e) deleteUser uId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "User was successfully deleted from the database"
 
 postUser :: B.ByteString -> IO Response
 postUser b = do

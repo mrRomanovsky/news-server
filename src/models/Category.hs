@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
-
+{-# LANGUAGE OverloadedStrings #-}
 module Category where
 
 import Model
 import Data.Aeson
+import Control.Monad
+import Control.Applicative
 import GHC.Generics
 import Data.Text
 import Database.PostgreSQL.Simple.FromRow
@@ -17,7 +19,16 @@ instance Model Category where
   update _ _ = return ()
   delete _ = return ()
 
-instance FromJSON Category
+{-
+instance ToJSON Tag
+instance FromJSON Tag where
+  parseJSON (Object v) = Tag <$> (v .: "tagId" <|> pure (-1)) <*> v .: "tagName"
+  parseJSON _ = mzero
+-}
+
+instance FromJSON Category where
+  parseJSON (Object v) = Category <$> (v .: "categoryId" <|> pure (-1)) <*> v .: "name" <*> v .:? "parentId"
+  parseJSON _ = mzero
 instance ToJSON Category
 
 instance FromRow Category where

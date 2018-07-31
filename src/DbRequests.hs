@@ -23,6 +23,38 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+updateCategory :: Category -> IO ()
+updateCategory Category{Category.categoryId = cId, Category.name = n, Category.parentId = pId} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE categories SET category_name=?, category_parent=? WHERE category_id=?"
+           (n, pId, cId)
+  return () --maybe I should do something with execute to remove this "return"
+
+deleteCategory :: Integer -> IO ()
+deleteCategory cId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "DELETE FROM categories WHERE category_id=?" [cId]
+  return ()
+
+insertCategory :: Category -> IO ()
+insertCategory Category{Category.name = n, Category.parentId = pId} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "INSERT INTO categories(category_name, category_parent) values (?,?)"
+           (n, pId)
+  return () --maybe I should do something with execute to remove this "return"
+
 updateTag :: Tag -> IO ()
 updateTag Tag{Tag.tagId = tId, Tag.tagName = tName} = do
   conn <- connect defaultConnectInfo {
@@ -33,8 +65,6 @@ updateTag Tag{Tag.tagId = tId, Tag.tagName = tName} = do
   execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?"
            (tName, tId)
   return () --maybe I should do something with execute to remove this "return"
-
---UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';
 
 deleteTag :: Integer -> IO ()
 deleteTag tId = do

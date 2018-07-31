@@ -4,6 +4,7 @@ module Requests (processAppRequest, processPostRequest) where
 
 import qualified Tag as T
 import qualified Post as P
+import qualified Draft as D
 import qualified User as U
 import qualified Author as A
 import qualified Category as C
@@ -49,7 +50,43 @@ processPostRequest r = case pathInfo r of
   ["categories"] -> postCategory =<< strictRequestBody r
   ["categories", "delete"] -> deleteCategoryBs =<< strictRequestBody r
   ["categories", "update"] -> updateCategoryBs =<< strictRequestBody r
+  ["drafts"] -> postDraft =<< strictRequestBody r
+  ["drafts", "delete"] -> deleteDraftBs =<< strictRequestBody r
+  ["drafts", "update"] -> updateDraftBs =<< strictRequestBody r
+  ["drafts", "publish"] -> publishDraftBs =<< strictRequestBody r
   _         -> return notImplementedFeature
+
+publishDraftBs :: B.ByteString -> IO Response
+publishDraftBs b = do
+  let dId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing draft id: " ++ e) publishDraft dId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Draft was successfully published"
+      
+updateDraftBs :: B.ByteString -> IO Response
+updateDraftBs b = do
+  let draft = eitherDecode b :: Either String D.Draft
+  either (\e -> print $ "error parsing draft: " ++ e) updateDraft draft
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Draft was successfully updated"
+  
+deleteDraftBs :: B.ByteString -> IO Response
+deleteDraftBs b = do
+  let dId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing draft id: " ++ e) deleteDraft dId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Draft was successfully deleted from the database"
+
+postDraft :: B.ByteString -> IO Response
+postDraft b = do
+  let draft = eitherDecode b :: Either String D.Draft
+  either (\e -> print $ "error parsing category: " ++ e) insertDraft draft
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Draft was successfully added to the database"
 
 updateAuthorBs :: B.ByteString -> IO Response
 updateAuthorBs b = do

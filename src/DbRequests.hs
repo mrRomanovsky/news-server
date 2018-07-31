@@ -24,6 +24,53 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+publishDraft :: Integer -> IO ()
+publishDraft = undefined
+
+updateDraft :: Draft -> IO ()
+updateDraft Draft{draftId = dId, Draft.postId = pId, draftText = dText} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE drafts SET post_id=?, draft_text=? WHERE draft_id=?"
+           (pId, dText, dId)
+  return () --maybe I should do something with execute to remove this "return"
+
+deleteDraft :: Integer -> IO ()
+deleteDraft dId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
+  return ()
+
+{-
+{draftId, postId :: Integer, draftText :: Text}
+-}
+
+{-
+CREATE TABLE drafts (
+  draft_id SERIAL PRIMARY KEY,
+  post_id INTEGER REFERENCES posts,
+  draft_text TEXT NOT NULL
+);
+-}
+
+insertDraft :: Draft -> IO ()
+insertDraft Draft{Draft.postId = pId, draftText = dText} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "INSERT INTO drafts(post_id, draft_text) values (?,?)"
+           (pId, dText)
+  return () --maybe I should do something with execute to remove this "return"
+
 updateAuthor :: Author -> IO ()
 updateAuthor Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} = do
   conn <- connect defaultConnectInfo {
@@ -44,8 +91,6 @@ deleteAuthor aId = do
   }
   execute conn "DELETE FROM authors WHERE author_id=?" [aId]
   return ()
-
-{-{authorId, userId :: Integer, desc :: Text}-}
 
 insertAuthor :: Author -> IO ()
 insertAuthor Author{Author.userId = uId, Author.desc = aDesc} = do

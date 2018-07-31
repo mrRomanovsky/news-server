@@ -53,6 +53,7 @@ instance ToJSON T.LocalTimestamp where
 instance FromJSON User where
   parseJSON (Object v) = User (-1) <$> v .: "name" <*> v .: "surname"
     <*> v .: "avatar" <*> (pure $ getLocTimestamp "2017-07-28 14:14:14") <*> pure False --replace default data with maybe
+  parseJSON _ = mzero
 instance ToJSON User
 
 instance Model User where

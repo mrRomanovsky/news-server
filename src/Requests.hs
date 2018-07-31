@@ -38,28 +38,34 @@ processPostRequest :: Request -> IO Response
 processPostRequest r = case pathInfo r of
   ["users"] -> postUser =<< strictRequestBody r
   ["users", "delete"] -> deleteUserBs =<< strictRequestBody r
+  ["tags"] -> postTag =<< strictRequestBody r
+  ["tags", "delete"] -> deleteTagBs =<< strictRequestBody r
   _         -> return notImplementedFeature
+
+deleteTagBs :: B.ByteString -> IO Response
+deleteTagBs b = do
+  let tId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing tag id: " ++ e) deleteTag tId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Tag was successfully deleted from the database"
 
 deleteUserBs :: B.ByteString -> IO Response
 deleteUserBs b = do
   let uId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
-  either (\e -> print $ "error parsing Id: " ++ e) deleteUser uId
+  either (\e -> print $ "error parsing user id: " ++ e) deleteUser uId
   return $ 
     responseLBS status200 [("Content-Type", "application/json")]
       "User was successfully deleted from the database"
 
-{-
-    case parseOnly textList (decodeUtf8 bs) of
-      Left err -> returnError ConversionFailed f err
-      Right tags -> return tags
+postTag :: B.ByteString -> IO Response
+postTag b = do
+  let tag = eitherDecode b :: Either String T.Tag
+  either (\e -> print $ "error parsing tag: " ++ e) insertTag tag
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Tag was successfully added to the database"
 
-textList :: Parser [Text]
-textList = do
-  char '{'
-  many1 textComma
- -- char '}'
- -- return elems
--}
 
 postUser :: B.ByteString -> IO Response
 postUser b = do

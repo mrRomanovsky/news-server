@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS authors CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
 DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS drafts CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
 
 CREATE TABLE users (
@@ -87,6 +88,9 @@ CREATE TABLE drafts (
   post_id INTEGER REFERENCES posts,
   draft_text TEXT NOT NULL
 );
+
+INSERT INTO drafts (post_id, draft_text) VALUES
+  (1, 'SOME NEW TEXT FOR TEST POST 1!');
 
 CREATE TABLE comments (
   comment_id serial PRIMARY KEY,

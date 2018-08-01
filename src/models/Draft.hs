@@ -29,17 +29,18 @@ CREATE TABLE drafts (
 data Draft = Draft { draftId, postId, authorId :: Integer, creationTime :: T.LocalTimestamp
                    , categoryId :: Integer, tags :: Maybe (Vector Text)
                    , textContent :: Text, mainPhoto :: Text
-                   , additionalPhotos :: Maybe (Vector Text)} deriving (Show, Generic)
+                   , additionalPhotos :: Maybe (Vector Text), postComments :: Maybe (Vector Text)} deriving (Show, Generic)
 
 instance FromJSON Draft where
   parseJSON (Object v) = Draft <$> (v .: "draftId" <|> pure (-1)) 
     <*> v .: "postId" <*> v .: "authorId"
     <*> (v .: "creationTime" <|> pure (U.getLocTimestamp "2017-07-28 14:14:14")) <*> v .: "categoryId"
-    <*> v .:? "tags" <*> v .: "textContent" <*> v .: "mainPhoto" <*> v .:? "additionalPhotos" 
+    <*> v .:? "tags" <*> v .: "textContent" <*> v .: "mainPhoto" <*> v .:? "additionalPhotos"
+    <*> v .:? "postComments" 
   parseJSON _ = mzero
 instance ToJSON Draft
 
 instance FromRow Draft where
   fromRow = Draft <$> field <*> field <*> field
     <*> field <*> field <*> field <*> field
-    <*> field <*> field
+    <*> field <*> field <*> field

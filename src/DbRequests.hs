@@ -81,14 +81,16 @@ publishDraft dId = do
   }
   execute conn
    "UPDATE posts SET (creation_time,\
+                     \post_name,\
                      \category_id,\
                      \tags,\
                      \text_content,\
                      \main_photo,\
                      \additional_photos) =\
-                 \(SELECT creation_time, category_id, tags, text_content, main_photo, additional_photos\
-                 \   FROM drafts WHERE draft_id=?)" [dId]
-  return ()
+                 \(SELECT creation_time, post_name, category_id, tags, text_content, main_photo, additional_photos\
+                 \   FROM drafts WHERE draft_id=?)\
+                 \WHERE post_id = (SELECT post_id FROM drafts WHERE draft_id=?)" (dId, dId)
+  return () --OPTIMIZE THIS FUNCTION! NOT EFFICIENT! TWO SAME SELECTS!
 
 {-
 UPDATE accounts SET (contact_first_name, contact_last_name) =
@@ -111,7 +113,7 @@ CREATE TABLE drafts (
 -}
 
 updateDraft :: Draft -> IO ()
-updateDraft Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId
+updateDraft Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
                  , Draft.creationTime = dTime, Draft.categoryId = cId
                  , Draft.tags = dTags, Draft.textContent = dText
                  , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} = do
@@ -120,8 +122,8 @@ updateDraft Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId
   , connectUser = "news-server"
   , connectPassword = "news-server" 
   }
-  execute conn "UPDATE drafts SET post_id=?, category_id=?, tags=?, text_content=?, main_photo=?, additional_photos=? WHERE draft_id=?"
-           (pId, cId, dTags, dText, dPhoto, dAddPhotos, dId)
+  execute conn "UPDATE drafts SET post_id=?, author_id=?, post_name=?, category_id=?, tags=?, text_content=?, main_photo=?, additional_photos=? WHERE draft_id=?"
+           (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos, dId)
   return () --maybe I should do something with execute to remove this "return"
 
 deleteDraft :: Integer -> IO ()
@@ -142,7 +144,7 @@ data Draft = Draft { draftId, postId, authorId :: Integer, creationTime :: T.Loc
 -}
 
 insertDraft :: Draft -> IO ()
-insertDraft Draft{ Draft.postId = pId, Draft.authorId = aId
+insertDraft Draft{ Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
                  , Draft.creationTime = dTime, Draft.categoryId = cId
                  , Draft.tags = dTags, Draft.textContent = dText
                  , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} = do
@@ -151,8 +153,8 @@ insertDraft Draft{ Draft.postId = pId, Draft.authorId = aId
   , connectUser = "news-server"
   , connectPassword = "news-server" 
   }
-  execute conn "INSERT INTO drafts(post_id, category_id, tags, text_content, main_photo, additional_photos) values (?, ?, ?, ?, ?, ?, ?)"
-           (pId, cId, dTags, dText, dPhoto, dAddPhotos)
+  execute conn "INSERT INTO drafts(post_id, author_id, post_name, category_id, tags, text_content, main_photo, additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
+           (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
   return () --maybe I should do something with execute to remove this "return"
 
 updateAuthor :: Author -> IO ()

@@ -24,18 +24,9 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
-publishDraft :: Integer -> IO ()
-publishDraft dId = do
-  conn <- connect defaultConnectInfo {
-      connectDatabase = "news-server"
-    , connectUser = "news-server"
-    , connectPassword = "news-server" 
-  }
-  execute conn "UPDATE posts SET text_content = (SELECT draft_text FROM drafts WHERE draft_id=?)" [dId]
-  return ()
-
-updateDraft :: Draft -> IO ()
-updateDraft Draft{draftId = dId, Draft.postId = pId, draftText = dText} = do
+{-
+updatePost :: Post -> IO ()
+updatePost Post{draftId = dId, Draft.postId = pId, draftText = dText} = do
   conn <- connect defaultConnectInfo {
     connectDatabase = "news-server"
   , connectUser = "news-server"
@@ -43,6 +34,98 @@ updateDraft Draft{draftId = dId, Draft.postId = pId, draftText = dText} = do
   }
   execute conn "UPDATE drafts SET post_id=?, draft_text=? WHERE draft_id=?"
            (pId, dText, dId)
+  return () --maybe I should do something with execute to remove this "return"
+
+deletePost :: Integer -> IO ()
+deletePost pId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
+  return ()
+
+insertPost :: Post -> IO ()
+insertPost Post{Draft.postId = pId, draftText = dText} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "INSERT INTO drafts(post_id, draft_text) values (?,?)"
+           (pId, dText) 
+  return ()
+-}
+{-
+CREATE TABLE posts (
+  post_id serial PRIMARY KEY,
+  post_name TEXT NOT NULL,
+  creation_time timestamp default current_timestamp,
+  author_id integer references authors,
+  category_id integer references categories,
+  tags text[],
+  text_content text NOT NULL,
+  main_photo text NOT NULL,
+  additional_photos text[],
+  post_comments text[]
+);
+-}
+
+publishDraft :: Integer -> IO ()
+publishDraft dId = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  execute conn
+   "UPDATE posts SET creation_time = d.creation_time,\
+                     \category_id = d.category_id,\
+                     \tags = d.tags,\
+                     \text_content = d.text_content,\
+                     \main_photo = d.main_photo,\
+                     \additional_photos = d.additional_photos\
+                 \FROM (SELECT creation_time, category_id, tags, text_content, main_photo, additional_photos\
+                 \      FROM drafts WHERE draft_id=?) AS d" [dId]
+  return ()
+
+{-
+UPDATE dummy
+SET customer=subquery.customer,
+    address=subquery.address,
+    partn=subquery.partn
+FROM (SELECT address_id, customer, address, partn
+      FROM  /* big hairy SQL */ ...) AS subquery
+WHERE dummy.address_id=subquery.address_id;
+-}
+
+{-
+CREATE TABLE drafts (
+  draft_id SERIAL PRIMARY KEY,
+  post_id INTEGER REFERENCES posts,
+  creation_time timestamp default current_timestamp,
+  category_id INTEGER REFERENCES categories,
+  tags text[],
+  text_content text NOT NULL,
+  main_photo text NOT NULL,
+  additional_photos text[],
+  post_comments text[]
+);
+-}
+
+updateDraft :: Draft -> IO ()
+updateDraft Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId
+                 , Draft.creationTime = dTime, Draft.categoryId = cId
+                 , Draft.tags = dTags, Draft.textContent = dText
+                 , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} = do
+  conn <- connect defaultConnectInfo {
+    connectDatabase = "news-server"
+  , connectUser = "news-server"
+  , connectPassword = "news-server" 
+  }
+  execute conn "UPDATE drafts SET post_id=?, category_id=?, tags=?, text_content=?, main_photo=?, additional_photos=? WHERE draft_id=?"
+           (pId, cId, dTags, dText, dPhoto, dAddPhotos, dId)
   return () --maybe I should do something with execute to remove this "return"
 
 deleteDraft :: Integer -> IO ()
@@ -56,26 +139,24 @@ deleteDraft dId = do
   return ()
 
 {-
-{draftId, postId :: Integer, draftText :: Text}
--}
-
-{-
-CREATE TABLE drafts (
-  draft_id SERIAL PRIMARY KEY,
-  post_id INTEGER REFERENCES posts,
-  draft_text TEXT NOT NULL
-);
+data Draft = Draft { draftId, postId, authorId :: Integer, creationTime :: T.LocalTimeStamp
+                   , authorId :: Integer, categoryId :: Integer
+                   , tags :: Maybe [Text], textContent :: Text, mainPhoto :: Text
+                   , additionalPhotos :: Maybe [Text]
 -}
 
 insertDraft :: Draft -> IO ()
-insertDraft Draft{Draft.postId = pId, draftText = dText} = do
+insertDraft Draft{ Draft.postId = pId, Draft.authorId = aId
+                 , Draft.creationTime = dTime, Draft.categoryId = cId
+                 , Draft.tags = dTags, Draft.textContent = dText
+                 , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} = do
   conn <- connect defaultConnectInfo {
     connectDatabase = "news-server"
   , connectUser = "news-server"
   , connectPassword = "news-server" 
   }
-  execute conn "INSERT INTO drafts(post_id, draft_text) values (?,?)"
-           (pId, dText)
+  execute conn "INSERT INTO drafts(post_id, category_id, tags, text_content, main_photo, additional_photos) values (?, ?, ?, ?, ?, ?, ?)"
+           (pId, cId, dTags, dText, dPhoto, dAddPhotos)
   return () --maybe I should do something with execute to remove this "return"
 
 updateAuthor :: Author -> IO ()

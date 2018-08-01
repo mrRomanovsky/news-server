@@ -86,11 +86,17 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
 CREATE TABLE drafts (
   draft_id SERIAL PRIMARY KEY,
   post_id INTEGER REFERENCES posts,
-  draft_text TEXT NOT NULL
+  creation_time timestamp default current_timestamp,
+  category_id INTEGER REFERENCES categories,
+  tags text[],
+  text_content text NOT NULL,
+  main_photo text NOT NULL,
+  additional_photos text[],
+  post_comments text[]
 );
 
-INSERT INTO drafts (post_id, draft_text) VALUES
-  (1, 'SOME NEW TEXT FOR TEST POST 1!');
+INSERT INTO drafts (post_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
+  (1, 2, array['tag1', 'tag2', 'tag3'], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3');
 
 CREATE TABLE comments (
   comment_id serial PRIMARY KEY,

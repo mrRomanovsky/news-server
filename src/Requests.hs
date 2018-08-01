@@ -55,7 +55,35 @@ processPostRequest r = case pathInfo r of
   ["drafts", "update"] -> updateDraftBs =<< strictRequestBody r
   ["drafts", "publish"] -> publishDraftBs =<< strictRequestBody r
   _         -> return notImplementedFeature
+  {-["posts"] -> postPost =<< strictRequestBody r
+  ["posts", "delete"] -> deletePostBs =<< strictRequestBody r
+  ["posts", "update"] -> updatePostBs =<< strictRequestBody r-}
 
+{-
+updatePostBs :: B.ByteString -> IO Response
+updatePostBs b = do
+  let post = eitherDecode b :: Either String P.Post
+  either (\e -> print $ "error parsing post: " ++ e) updatePost post
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Post was successfully updated"
+  
+deletePostBs :: B.ByteString -> IO Response
+deletePostBs b = do
+  let pId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
+  either (\e -> print $ "error parsing post id: " ++ e) deletePost pId
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Post was successfully deleted from the database"
+
+postPost :: B.ByteString -> IO Response
+postPost b = do
+  let post = eitherDecode b :: Either String P.Post
+  either (\e -> print $ "error parsing post: " ++ e) insertPost post
+  return $ 
+    responseLBS status200 [("Content-Type", "application/json")]
+      "Post was successfully added to the database"
+-}
 publishDraftBs :: B.ByteString -> IO Response
 publishDraftBs b = do
   let dId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer

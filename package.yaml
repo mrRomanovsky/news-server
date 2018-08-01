@@ -30,6 +30,7 @@ dependencies:
 - postgresql-simple
 - binary
 - attoparsec
+- vector
 
 library:
   source-dirs:

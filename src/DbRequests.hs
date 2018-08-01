@@ -80,24 +80,20 @@ publishDraft dId = do
     , connectPassword = "news-server" 
   }
   execute conn
-   "UPDATE posts SET creation_time = d.creation_time,\
-                     \category_id = d.category_id,\
-                     \tags = d.tags,\
-                     \text_content = d.text_content,\
-                     \main_photo = d.main_photo,\
-                     \additional_photos = d.additional_photos\
-                 \FROM (SELECT creation_time, category_id, tags, text_content, main_photo, additional_photos\
-                 \      FROM drafts WHERE draft_id=?) AS d" [dId]
+   "UPDATE posts SET (creation_time,\
+                     \category_id,\
+                     \tags,\
+                     \text_content,\
+                     \main_photo,\
+                     \additional_photos) =\
+                 \(SELECT creation_time, category_id, tags, text_content, main_photo, additional_photos\
+                 \   FROM drafts WHERE draft_id=?)" [dId]
   return ()
 
 {-
-UPDATE dummy
-SET customer=subquery.customer,
-    address=subquery.address,
-    partn=subquery.partn
-FROM (SELECT address_id, customer, address, partn
-      FROM  /* big hairy SQL */ ...) AS subquery
-WHERE dummy.address_id=subquery.address_id;
+UPDATE accounts SET (contact_first_name, contact_last_name) =
+    (SELECT first_name, last_name FROM salesmen
+     WHERE salesmen.id = accounts.sales_id);;
 -}
 
 {-

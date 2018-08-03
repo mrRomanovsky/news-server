@@ -69,7 +69,7 @@ CREATE TABLE posts (
   creation_time timestamp default current_timestamp,
   author_id integer references authors,
   category_id integer references categories,
-  tags text[],
+  tags INTEGER[],
   text_content text NOT NULL,
   main_photo text NOT NULL,
   additional_photos text[],
@@ -81,14 +81,14 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
   (SELECT a.author_id FROM authors AS a
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
-  array['tag1', 'tag2', 'tag3'], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2']);
+  array[1, 2, 3], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2']);
 
 INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
   ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',
   (SELECT a.author_id FROM authors AS a
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 3')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
-  array['tag1', 'tag2', 'tag3'], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
+  array[1, 2, 3], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
 
 CREATE TABLE drafts (
   draft_id SERIAL PRIMARY KEY,
@@ -97,7 +97,7 @@ CREATE TABLE drafts (
   post_name TEXT NOT NULL,
   creation_time timestamp default current_timestamp,
   category_id INTEGER REFERENCES categories,
-  tags text[],
+  tags INTEGER[],
   text_content text NOT NULL,
   main_photo text NOT NULL,
   additional_photos text[],
@@ -105,12 +105,12 @@ CREATE TABLE drafts (
 );
 
 INSERT INTO drafts (post_id, author_id, post_name, category_id, tags, text_content, main_photo, additional_photos) VALUES
-  (1, 1, 'Draft Post Name', 2, array['tag1', 'tag2', 'tag3'], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);
+  (1, 1, 'Draft Post Name', 2, array[1, 2, 3], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);
 
 CREATE TABLE comments (
   comment_id serial PRIMARY KEY,
   comment_text text,
-  post_id integer references posts
+  post_id integer --posts --it should be referencing posts!
 );
 
 INSERT INTO comments (comment_text, post_id) VALUES

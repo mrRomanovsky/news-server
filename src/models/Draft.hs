@@ -1,38 +1,74 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Draft where
 import qualified Post as P
 import qualified User as U
 import Data.Aeson
+import DbRequests
 import Control.Applicative
 import Control.Monad
 import GHC.Generics
 import Data.Text
 import Data.Vector
+import Model
 import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromField
+import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
 import qualified Database.PostgreSQL.Simple.Time as T
-{-
-CREATE TABLE drafts (
-  draft_id SERIAL PRIMARY KEY,
-  post_id INTEGER REFERENCES posts,
-  creation_time timestamp default current_timestamp,
-  category_id INTEGER REFERENCES categories,
-  tags text[],
-  text_content text NOT NULL,
-  main_photo text NOT NULL,
-  additional_photos text[],
-  post_comments text[]
-);
--}
 
-data Draft = Draft { draftId, postId, authorId :: Integer, postName :: Text, creationTime :: T.LocalTimestamp
-                   , categoryId :: Integer, tags :: Maybe (Vector Text)
+data Draft = Draft { draftId :: DraftId, postId, authorId :: Integer, postName :: Text, creationTime :: T.LocalTimestamp
+                   , categoryId :: Integer, tags :: Maybe (Vector Integer)
                    , textContent :: Text, mainPhoto :: Text
                    , additionalPhotos :: Maybe (Vector Text), postComments :: Maybe (Vector Text)} deriving (Show, Generic)
 
+newtype DraftId = DraftId {dId :: Integer}
+
+instance Show DraftId where
+  show = show . dId
+
+instance ToJSON DraftId where
+  toJSON = toJSON . dId
+
+instance FromJSON DraftId where
+  parseJSON  = fmap DraftId . parseJSON
+
+instance FromField DraftId where
+  fromField field mdata = do
+    x <- fromField field mdata
+    return $ DraftId x
+
+instance ToField DraftId where
+  toField = toField . dId
+
+instance Model Draft DraftId where
+  create Draft{ Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
+                 , Draft.creationTime = dTime, Draft.categoryId = cId
+                 , Draft.tags = dTags, Draft.textContent = dText
+                 , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn = do
+    execute conn "INSERT INTO drafts(post_id, author_id, post_name, category_id, tags, text_content, main_photo, additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
+      (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
+    return () 
+
+  read = getRecords "drafts"
+
+  update Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
+              , Draft.creationTime = dTime, Draft.categoryId = cId
+              , Draft.tags = dTags, Draft.textContent = dText
+              , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn = do
+    execute conn "UPDATE drafts SET post_id=?, author_id=?, post_name=?, category_id=?, tags=?, text_content=?, main_photo=?, additional_photos=? WHERE draft_id=?"
+       (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos, dId)
+    return ()
+
+  delete dId conn = do
+    execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
+    return ()
+
 instance FromJSON Draft where
-  parseJSON (Object v) = Draft <$> (v .: "draftId" <|> pure (-1)) 
+  parseJSON (Object v) = Draft <$> (v .: "draftId" <|> pure (DraftId (-1))) 
     <*> v .: "postId" <*> v .: "authorId" <*> v .: "postName"
     <*> (v .: "creationTime" <|> pure (U.getLocTimestamp "2017-07-28 14:14:14")) <*> v .: "categoryId"
     <*> v .:? "tags" <*> v .: "textContent" <*> v .: "mainPhoto" <*> v .:? "additionalPhotos"
@@ -44,3 +80,18 @@ instance FromRow Draft where
   fromRow = Draft <$> field <*> field <*> field
     <*> field <*> field <*> field <*> field
     <*> field <*> field <*> field <*> field
+
+publishDraft :: DraftId -> Connection -> IO ()
+publishDraft (DraftId did) conn = do
+  execute conn
+   "UPDATE posts SET (creation_time,\
+                     \post_name,\
+                     \category_id,\
+                     \tags,\
+                     \text_content,\
+                     \main_photo,\
+                     \additional_photos) =\
+                 \(SELECT creation_time, post_name, category_id, tags, text_content, main_photo, additional_photos\
+                 \   FROM drafts WHERE draft_id=?)\
+                 \WHERE post_id = (SELECT post_id FROM drafts WHERE draft_id=?)" (did, did)
+  return () --OPTIMIZE THIS FUNCTION! NOT EFFICIENT! TWO SAME SELECTS!

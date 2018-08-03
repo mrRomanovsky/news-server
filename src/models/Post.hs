@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
-
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Post where
 
 import Control.Applicative
@@ -10,58 +11,70 @@ import User
 import Category
 import Tag
 import Model
+import DbRequests
 import Data.Aeson
 import GHC.Generics
 import Data.Text hiding (takeWhile)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Attoparsec.Text
 import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
+import qualified Data.ByteString as B
+import Data.Vector
 import qualified Database.PostgreSQL.Simple.Time as T
 
-data Post = Post { postId :: Integer, postName :: Text, creation_date :: T.LocalTimestamp
-                 , authorId :: Integer, categoryId :: Integer, tags :: Maybe [Text]
+data Post = Post { postId :: PostId, postName :: Text, creation_date :: T.LocalTimestamp
+                 , authorId :: Integer, categoryId :: Integer, tags :: Maybe (Vector Integer)
                  , text :: Text, mainPhoto :: Text
-                 , additionalPhotos :: Maybe [Text]
-                 , comments :: Maybe [Text]} deriving (Show, Generic)
+                 , additionalPhotos :: Maybe (Vector Text)
+                 , comments :: Maybe (Vector Text)} deriving (Show, Generic)
 
-instance FromField ([] Text) where
-  fromField f Nothing = returnError ConversionFailed f "No list returned!"
-  fromField f (Just bs) =
-    case parseOnly textList (decodeUtf8 bs) of
-      Left err -> returnError ConversionFailed f err
-      Right tags -> return tags
+newtype PostId = PostId {pId :: Integer}
 
-textList :: Parser [Text]
-textList = do
-  char '{'
-  many1 textComma
- -- char '}'
- -- return elems
+instance Show PostId where
+  show = show . pId
 
-textComma :: Parser Text
-textComma = do
-  tag <- takeWhile (\c -> c /= ',' && c /= '}')
-  char ',' <|> char '}'
-  return tag
+instance ToJSON PostId where
+  toJSON = toJSON . pId
 
-instance Model Post where
-  create _ = return ()
-  read = return []
-  update _ _ = return ()
-  delete _ = return ()
+instance FromField PostId where
+  fromField field mdata = do
+    x <- fromField field mdata
+    return $ PostId x
 
-instance FromJSON Post
+instance ToField PostId where
+  toField = toField . pId
+
+instance Model Post PostId where
+  create = error "Sorry, this feature is not implemented yet"
+
+  read = getRecords "posts"
+
+  update = error "Sorry, this feature is not implemented yet"
+
+  delete = error "Sorry, this feature is not implemented yet"
+
+--instance FromJSON Post - not needed yet
 instance ToJSON Post
 
 instance FromRow Post where
   fromRow = Post <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
-{-Новости:
-краткое название
-дата создания
-один автор
-одна категория
-множество тегов
-текстовый контент
-одна главная фотография
-множество дополнительных фотографий-}
+
+getPostsByAuthor :: B.ByteString -> Connection -> IO [Post]
+getPostsByAuthor author conn =
+  query conn "SELECT * FROM posts \
+             \WHERE author_id = (SELECT author_id FROM authors \
+               \WHERE users_id = (SELECT users_id FROM users \
+                 \WHERE users_name = ?))" [author]
+
+getPostsWithSubstrInContent :: B.ByteString -> Connection -> IO [Post]
+getPostsWithSubstrInContent substr conn =
+  query conn "SELECT * FROM posts WHERE text_content LIKE ?"
+    ["%" `B.append` substr `B.append` "%"]
+
+getPostsWithSubstrInName :: B.ByteString -> Connection -> IO [Post]
+getPostsWithSubstrInName substr conn =
+  query conn "SELECT * FROM posts WHERE post_name LIKE ?"
+    ["%" `B.append` substr `B.append` "%"]

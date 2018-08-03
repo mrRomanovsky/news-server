@@ -30,7 +30,9 @@ data AuthorsRequest = CreateAuthor A.Author | GetAuthors | UpdateAuthor A.Author
 
 data CategoriesRequest = CreateCategory C.Category | GetCategories | UpdateCategory C.Category C.Category
 
-data PostsRequest = GetPosts | GetPostsWithSubstrInName BS.ByteString | GetPostsWithSubstrInContent BS.ByteString
+data PostsRequest = GetPosts | GetPostsWithSubstrInName BS.ByteString |
+                    GetPostsWithSubstrInContent BS.ByteString |
+                    GetPostsByAuthor BS.ByteString
 
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
 
@@ -193,19 +195,14 @@ parseAppRequest ["posts"] [("name_contains", Just substr)] =
   Just $ AppPostsRequest $ GetPostsWithSubstrInName substr
 parseAppRequest ["posts"] [("content_contains", Just substr)] =
   Just $ AppPostsRequest $ GetPostsWithSubstrInContent substr
+parseAppRequest ["posts"] [("author_name", Just author)] =
+  Just $ AppPostsRequest $ GetPostsByAuthor author
 parseAppRequest ["posts"] [] = Just $ AppPostsRequest GetPosts
 parseAppRequest ["categories"] _ = Just $ AppCategoriesRequest GetCategories
 parseAppRequest ["tags"] _ = Just $ AppTagsRequest GetTags
 parseAppRequest ["authors"] _ = Just $ AppAuthorsRequest GetAuthors
 parseAppRequest ["drafts"] _ = Just $ AppDraftsRequest GetDrafts
 parseAppRequest _ _        = Nothing
-{-parseAppRequest ["posts"] [("name_includes", Just substr)] =
-   Just $ AppPostsRequest $ GetPostsBy $ const True-}
-
-{-
-название (вхождение подстроки)
-контент (вхождение подстроки)
--}
 
 user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False
 
@@ -230,6 +227,8 @@ processPostsRequest (GetPostsWithSubstrInName substr) =
   respondJson <$> getPostsWithSubstrInName substr
 processPostsRequest (GetPostsWithSubstrInContent substr) =
   respondJson <$> getPostsWithSubstrInContent substr
+processPostsRequest (GetPostsByAuthor author) =
+  respondJson <$> getPostsByAuthor author  
 --processPostsRequest _ = return notImplementedFeature
 
 processCommentsRequest :: CommentsRequest -> IO Response

@@ -86,7 +86,7 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
 INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
   ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',
   (SELECT a.author_id FROM authors AS a
-    WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
+    WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 3')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
   array['tag1', 'tag2', 'tag3'], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
 

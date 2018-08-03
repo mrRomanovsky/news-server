@@ -26,6 +26,18 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
+getPostsByAuthor :: B.ByteString -> IO [Post]
+getPostsByAuthor author = do
+  conn <- connect defaultConnectInfo {
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
+  }
+  query conn "SELECT * FROM posts \
+             \WHERE author_id = (SELECT author_id FROM authors \
+               \WHERE users_id = (SELECT users_id FROM users \
+                 \WHERE users_name = ?))" [author]
+
 getPostsWithSubstrInContent :: B.ByteString -> IO [Post]
 getPostsWithSubstrInContent substr = do
   conn <- connect defaultConnectInfo {

@@ -10,6 +10,8 @@ import Draft
 import Tag
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Types
+import qualified Data.ByteString as B
+import Data.Text.Encoding (decodeUtf8)
 import Control.Monad
 import Control.Applicative
 import Data.Text
@@ -24,39 +26,28 @@ dbTest = do
   putStrLn "2 + 2"
   mapM_ print =<< ( query_ conn "select 2 + 2" :: IO [Only Int] )
 
-{-
-updatePost :: Post -> IO ()
-updatePost Post{draftId = dId, Draft.postId = pId, draftText = dText} = do
-  conn <- connect defaultConnectInfo {
-    connectDatabase = "news-server"
-  , connectUser = "news-server"
-  , connectPassword = "news-server" 
-  }
-  execute conn "UPDATE drafts SET post_id=?, draft_text=? WHERE draft_id=?"
-           (pId, dText, dId)
-  return () --maybe I should do something with execute to remove this "return"
-
-deletePost :: Integer -> IO ()
-deletePost pId = do
+getPostsWithSubstrInContent :: B.ByteString -> IO [Post]
+getPostsWithSubstrInContent substr = do
   conn <- connect defaultConnectInfo {
       connectDatabase = "news-server"
     , connectUser = "news-server"
     , connectPassword = "news-server" 
   }
-  execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
-  return ()
+  query conn "SELECT * FROM posts WHERE text_content LIKE ?"
+    ["%" `B.append` substr `B.append` "%"]
 
-insertPost :: Post -> IO ()
-insertPost Post{Draft.postId = pId, draftText = dText} = do
+getPostsWithSubstrInName :: B.ByteString -> IO [Post]
+getPostsWithSubstrInName substr = do
+  let txt = decodeUtf8 substr
+  print txt
   conn <- connect defaultConnectInfo {
-    connectDatabase = "news-server"
-  , connectUser = "news-server"
-  , connectPassword = "news-server" 
+      connectDatabase = "news-server"
+    , connectUser = "news-server"
+    , connectPassword = "news-server" 
   }
-  execute conn "INSERT INTO drafts(post_id, draft_text) values (?,?)"
-           (pId, dText) 
-  return ()
--}
+  query conn "SELECT * FROM posts WHERE post_name LIKE ?"
+    ["%" `B.append` substr `B.append` "%"]
+--'abc' LIKE 'a%'     true
 {-
 CREATE TABLE posts (
   post_id serial PRIMARY KEY,
@@ -92,26 +83,6 @@ publishDraft dId = do
                  \WHERE post_id = (SELECT post_id FROM drafts WHERE draft_id=?)" (dId, dId)
   return () --OPTIMIZE THIS FUNCTION! NOT EFFICIENT! TWO SAME SELECTS!
 
-{-
-UPDATE accounts SET (contact_first_name, contact_last_name) =
-    (SELECT first_name, last_name FROM salesmen
-     WHERE salesmen.id = accounts.sales_id);;
--}
-
-{-
-CREATE TABLE drafts (
-  draft_id SERIAL PRIMARY KEY,
-  post_id INTEGER REFERENCES posts,
-  creation_time timestamp default current_timestamp,
-  category_id INTEGER REFERENCES categories,
-  tags text[],
-  text_content text NOT NULL,
-  main_photo text NOT NULL,
-  additional_photos text[],
-  post_comments text[]
-);
--}
-
 updateDraft :: Draft -> IO ()
 updateDraft Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
                  , Draft.creationTime = dTime, Draft.categoryId = cId
@@ -135,13 +106,6 @@ deleteDraft dId = do
   }
   execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
   return ()
-
-{-
-data Draft = Draft { draftId, postId, authorId :: Integer, creationTime :: T.LocalTimeStamp
-                   , authorId :: Integer, categoryId :: Integer
-                   , tags :: Maybe [Text], textContent :: Text, mainPhoto :: Text
-                   , additionalPhotos :: Maybe [Text]
--}
 
 insertDraft :: Draft -> IO ()
 insertDraft Draft{ Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName

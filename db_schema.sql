@@ -83,6 +83,13 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
   array['tag1', 'tag2', 'tag3'], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2']);
 
+INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
+  ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',
+  (SELECT a.author_id FROM authors AS a
+    WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
+  ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
+  array['tag1', 'tag2', 'tag3'], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
+
 CREATE TABLE drafts (
   draft_id SERIAL PRIMARY KEY,
   post_id INTEGER REFERENCES posts,

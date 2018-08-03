@@ -14,8 +14,9 @@ import Data.Text.Encoding (decodeUtf8)
 import Data.Aeson
 import Data.Attoparsec.Text
 import Network.Wai
-import Network.HTTP.Types (status200)
+import Network.HTTP.Types (status200, Query)
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple.Time
 import Database.PostgreSQL.Simple.FromRow
 
@@ -29,7 +30,7 @@ data AuthorsRequest = CreateAuthor A.Author | GetAuthors | UpdateAuthor A.Author
 
 data CategoriesRequest = CreateCategory C.Category | GetCategories | UpdateCategory C.Category C.Category
 
-data PostsRequest = GetPosts | GetPostsBy (P.Post -> Bool)
+data PostsRequest = GetPosts | GetPostsWithSubstrInName BS.ByteString | GetPostsWithSubstrInContent BS.ByteString
 
 data CommentsRequest = GetCommentsForPost P.Post | AddCommentForPost P.Post B.ByteString | DeleteCommentForPost P.Post Int
 
@@ -55,35 +56,7 @@ processPostRequest r = case pathInfo r of
   ["drafts", "update"] -> updateDraftBs =<< strictRequestBody r
   ["drafts", "publish"] -> publishDraftBs =<< strictRequestBody r
   _         -> return notImplementedFeature
-  {-["posts"] -> postPost =<< strictRequestBody r
-  ["posts", "delete"] -> deletePostBs =<< strictRequestBody r
-  ["posts", "update"] -> updatePostBs =<< strictRequestBody r-}
 
-{-
-updatePostBs :: B.ByteString -> IO Response
-updatePostBs b = do
-  let post = eitherDecode b :: Either String P.Post
-  either (\e -> print $ "error parsing post: " ++ e) updatePost post
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Post was successfully updated"
-  
-deletePostBs :: B.ByteString -> IO Response
-deletePostBs b = do
-  let pId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
-  either (\e -> print $ "error parsing post id: " ++ e) deletePost pId
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Post was successfully deleted from the database"
-
-postPost :: B.ByteString -> IO Response
-postPost b = do
-  let post = eitherDecode b :: Either String P.Post
-  either (\e -> print $ "error parsing post: " ++ e) insertPost post
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Post was successfully added to the database"
--}
 publishDraftBs :: B.ByteString -> IO Response
 publishDraftBs b = do
   let dId = (parseOnly decimal $ decodeUtf8 $ B.toStrict b) :: Either String Integer
@@ -204,8 +177,8 @@ postUser b = do
     responseLBS status200 [("Content-Type", "application/json")]
       "User was successfully added to the database"
 
-processAppRequest :: [Text] -> IO Response
-processAppRequest path = case parseAppRequest path of
+processAppRequest :: [Text] -> Query -> IO Response
+processAppRequest path q = case parseAppRequest path q of
   (Just (AppUsersRequest usersRequest)) -> processUsersRequest usersRequest
   (Just (AppPostsRequest postsRequest)) -> processPostsRequest postsRequest
   (Just (AppCategoriesRequest categoriesRequest)) -> processCategoriesRequest categoriesRequest
@@ -214,14 +187,25 @@ processAppRequest path = case parseAppRequest path of
   (Just (AppDraftsRequest draftsRequest)) -> processDraftsRequest draftsRequest
   Nothing                               -> return notImplementedFeature
 
-parseAppRequest :: [Text] -> Maybe AppRequest
-parseAppRequest ["users"] = Just $ AppUsersRequest GetUsers
-parseAppRequest ["posts"] = Just $ AppPostsRequest GetPosts
-parseAppRequest ["categories"] = Just $ AppCategoriesRequest GetCategories
-parseAppRequest ["tags"] = Just $ AppTagsRequest GetTags
-parseAppRequest ["authors"] = Just $ AppAuthorsRequest GetAuthors
-parseAppRequest ["drafts"] = Just $ AppDraftsRequest GetDrafts
-parseAppRequest _         = Nothing
+parseAppRequest :: [Text] -> Query -> Maybe AppRequest
+parseAppRequest ["users"] _ = Just $ AppUsersRequest GetUsers
+parseAppRequest ["posts"] [("name_contains", Just substr)] =
+  Just $ AppPostsRequest $ GetPostsWithSubstrInName substr
+parseAppRequest ["posts"] [("content_contains", Just substr)] =
+  Just $ AppPostsRequest $ GetPostsWithSubstrInContent substr
+parseAppRequest ["posts"] [] = Just $ AppPostsRequest GetPosts
+parseAppRequest ["categories"] _ = Just $ AppCategoriesRequest GetCategories
+parseAppRequest ["tags"] _ = Just $ AppTagsRequest GetTags
+parseAppRequest ["authors"] _ = Just $ AppAuthorsRequest GetAuthors
+parseAppRequest ["drafts"] _ = Just $ AppDraftsRequest GetDrafts
+parseAppRequest _ _        = Nothing
+{-parseAppRequest ["posts"] [("name_includes", Just substr)] =
+   Just $ AppPostsRequest $ GetPostsBy $ const True-}
+
+{-
+название (вхождение подстроки)
+контент (вхождение подстроки)
+-}
 
 user1 = U.User 1 "Test User 1" "Test Surname 1" "Test/avatar/path/img.jpg" (U.getLocTimestamp "2017-07-28 14:14:14") False
 
@@ -242,7 +226,11 @@ processCategoriesRequest _ = return notImplementedFeature
 
 processPostsRequest :: PostsRequest -> IO Response
 processPostsRequest GetPosts = respondJson <$> getPosts
-processPostsRequest _ = return notImplementedFeature
+processPostsRequest (GetPostsWithSubstrInName substr) =
+  respondJson <$> getPostsWithSubstrInName substr
+processPostsRequest (GetPostsWithSubstrInContent substr) =
+  respondJson <$> getPostsWithSubstrInContent substr
+--processPostsRequest _ = return notImplementedFeature
 
 processCommentsRequest :: CommentsRequest -> IO Response
 processCommentsRequest _ = return notImplementedFeature

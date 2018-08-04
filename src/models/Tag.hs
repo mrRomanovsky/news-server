@@ -69,3 +69,5 @@ instance Model Tag TagId where
   delete tId conn = do
     execute conn "DELETE FROM tags WHERE tag_id=?" [tId]
     return ()
+
+{-select * from foo where 'abc' = ANY(stuff);-}

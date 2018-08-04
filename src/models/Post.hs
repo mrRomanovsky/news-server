@@ -78,3 +78,21 @@ getPostsWithSubstrInName :: B.ByteString -> Connection -> IO [Post]
 getPostsWithSubstrInName substr conn =
   query conn "SELECT * FROM posts WHERE post_name LIKE ?"
     ["%" `B.append` substr `B.append` "%"]
+
+getPostsWithTag :: B.ByteString -> Connection -> IO [Post]
+getPostsWithTag tag conn =
+  query conn "SELECT * FROM posts WHERE tags @> ?"
+    ["{" `B.append` tag `B.append` "}"]
+
+getPostsTagsIn :: B.ByteString -> Connection -> IO [Post]
+getPostsTagsIn tagsIn conn = 
+  query conn "SELECT * FROM posts WHERE tags && ?"
+    ["{" `B.append` getArr tagsIn `B.append` "}"]
+
+getPostsTagsAll :: B.ByteString -> Connection -> IO [Post]
+getPostsTagsAll tagsAll conn =
+  query conn "SELECT * FROM posts WHERE tags @> ?"
+    ["{" `B.append` getArr tagsAll `B.append` "}"]
+
+getArr :: B.ByteString -> B.ByteString
+getArr = B.init . B.tail

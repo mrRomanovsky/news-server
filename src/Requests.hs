@@ -78,6 +78,17 @@ processFilterGetRequest ["posts"] [("content_substr", Just author)] c =
   respondJson <$> P.getPostsWithSubstrInContent author c
 processFilterGetRequest ["posts"] [("name_substr", Just author)] c =
   respondJson <$> P.getPostsWithSubstrInName author c
+processFilterGetRequest ["posts"] [("tag", Just tag)] c =
+  respondJson <$> P.getPostsWithTag tag c
+processFilterGetRequest ["posts"] [("tags_in", Just tagsIn)] c =
+  respondJson <$> P.getPostsTagsIn tagsIn c
+processFilterGetRequest ["posts"] [("tags_all", Just tagsAll)] c =
+  respondJson <$> P.getPostsTagsAll tagsAll c
+{-
+/posts?tag=123
+/posts?tags__in=[123,124,125]
+/posts?tags__all=[123,124,125]
+-}
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode

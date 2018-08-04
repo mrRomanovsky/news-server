@@ -2,8 +2,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Requests ( processPostRequest, processGetRequest, processFilterGetRequest
-                , authorizeAdmin) where
+module Requests (processPostRequest, processGetRequest, processFilterGetRequest) where
 
 import Prelude hiding (read)
 import qualified Tag as T
@@ -30,11 +29,12 @@ import Database.PostgreSQL.Simple.FromRow
 processPostRequest :: Request -> (Connection -> IO Response)
 processPostRequest request c = do
   rBody <- strictRequestBody request
+  let auth = lookup hAuthorization $ requestHeaders request
   case pathInfo request of
     ("users" : xs) -> postUser xs rBody c
-    ("tags" : xs) -> postTag xs rBody c
-    ("authors" : xs) -> postAuthor xs rBody (lookup hAuthorization $ requestHeaders request) c
-    ("categories" : xs) -> postCategory xs rBody c
+    ("tags" : xs) -> authResponse auth (postTag xs rBody) c
+    ("authors" : xs) -> authResponse auth (postAuthor xs rBody) c
+    ("categories" : xs) -> authResponse auth (postCategory xs rBody) c
     ("drafts" : xs) -> postDraft xs rBody c
 
 postTag :: [Text] -> B.ByteString -> Connection -> IO Response
@@ -57,14 +57,10 @@ postDraft ["update"] d = updateModel $ decodeDraft d
 postDraft ["delete"] dId = deleteModel (eitherDecode dId :: Either String D.DraftId)
 postDraft ["publish"] dId = publishDraftRequest (eitherDecode dId :: Either String D.DraftId)
 
-postAuthor :: [Text] -> B.ByteString -> Maybe AuthData -> Connection -> IO Response
-postAuthor [] b auth =
-  authorizedResponse auth $ createModel $ decodeAuthor b
-postAuthor ["update"] b auth =
-  authorizedResponse auth $ updateModel $ decodeAuthor b
-postAuthor ["delete"] b auth =
-  authorizedResponse auth $
-    deleteModel (eitherDecode b :: Either String A.AuthorId)
+postAuthor :: [Text] -> B.ByteString -> Connection -> IO Response
+postAuthor [] a = createModel $ decodeAuthor a
+postAuthor ["update"] a = updateModel $ decodeAuthor a
+postAuthor ["delete"] aId = deleteModel (eitherDecode aId :: Either String A.AuthorId)
 
 publishDraftRequest :: Either String D.DraftId -> Connection -> IO Response
 publishDraftRequest dId c = do
@@ -88,7 +84,7 @@ processGetRequest request = case pathInfo request of
   ["users"]      -> fmap respondJson . (read :: Connection -> IO [U.User])
   ["authors"]    ->
     let auth = lookup hAuthorization $ requestHeaders request
-        in authorizedResponse auth $ fmap respondJson . (read :: Connection -> IO [A.Author])
+        in authResponse auth $ fmap respondJson . (read :: Connection -> IO [A.Author])
   ["posts"]      -> fmap respondJson . (read :: Connection -> IO [P.Post])
 
 processFilterGetRequest :: [Text] -> Query -> Connection -> IO Response

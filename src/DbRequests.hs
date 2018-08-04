@@ -16,8 +16,8 @@ import Data.Text
 
 type AuthData = B.ByteString
 
-authorizedResponse :: Maybe AuthData -> (Connection -> IO Response) -> Connection -> IO Response
-authorizedResponse auth respond conn = do
+authResponse :: Maybe AuthData -> (Connection -> IO Response) -> Connection -> IO Response
+authResponse auth respond conn = do
   isAdmin <- authorizeAdmin auth conn
   if isAdmin
      then respond conn

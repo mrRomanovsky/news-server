@@ -21,6 +21,7 @@ application request respond = do
     , connectUser = "news-server"
     , connectPassword = "news-server" 
   }
+  authorizeAdmin request c >>= print
   let method = requestMethod request
       path = pathInfo request
   if method == methodGet

@@ -2,7 +2,8 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Requests (processPostRequest, processGetRequest, processFilterGetRequest) where
+module Requests ( processPostRequest, processGetRequest, processFilterGetRequest
+                , authorizeAdmin) where
 
 import Prelude hiding (read)
 import qualified Tag as T
@@ -18,7 +19,7 @@ import Data.Text.Encoding (decodeUtf8)
 import Data.Aeson
 import Data.Attoparsec.Text
 import Network.Wai
-import Network.HTTP.Types (status200, Query)
+import Network.HTTP.Types (status200, hAuthorization, Query)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple.Time
@@ -95,6 +96,11 @@ processFilterGetRequest ["posts"] [("created_at__gt", Just dateGt)] c =
 /posts?created_at__lt=2018-05-21
 /posts?created_at__gt=2018-05-21
 -}
+authorizeAdmin :: Request -> Connection -> IO Bool
+authorizeAdmin request conn = 
+  let headers = requestHeaders request
+      auth = lookup hAuthorization headers
+      in maybe (return False) (`checkAdmin` conn) auth
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode

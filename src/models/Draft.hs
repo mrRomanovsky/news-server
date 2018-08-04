@@ -69,11 +69,19 @@ instance Model Draft DraftId where
 
 instance FromJSON Draft where
   parseJSON (Object v) = Draft <$> (v .: "draftId" <|> pure (DraftId (-1))) 
+    <*> v .: "postId" <*> pure (-1) <*> v .: "postName"
+    <*> (v .: "creationTime" <|> pure (U.getLocTimestamp "2017-07-28 14:14:14")) <*> v .: "categoryId"
+    <*> v .:? "tags" <*> v .: "textContent" <*> v .: "mainPhoto" <*> v .:? "additionalPhotos"
+    <*> v .:? "postComments" 
+  parseJSON _ = mzero
+{-instance FromJSON Draft where
+  parseJSON (Object v) = Draft <$> (v .: "draftId" <|> pure (DraftId (-1))) 
     <*> v .: "postId" <*> v .: "authorId" <*> v .: "postName"
     <*> (v .: "creationTime" <|> pure (U.getLocTimestamp "2017-07-28 14:14:14")) <*> v .: "categoryId"
     <*> v .:? "tags" <*> v .: "textContent" <*> v .: "mainPhoto" <*> v .:? "additionalPhotos"
     <*> v .:? "postComments" 
   parseJSON _ = mzero
+-}
 instance ToJSON Draft
 
 instance FromRow Draft where

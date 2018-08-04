@@ -16,6 +16,23 @@ import Data.Text
 
 type AuthData = B.ByteString
 
+getDraftAuthor :: Integer -> Connection -> IO Integer
+getDraftAuthor dId conn = do
+  authorId <- query conn "SELECT author_id FROM drafts WHERE draft_id = ?"
+    [dId]
+  case authorId of
+    [[aId]] -> return aId
+    _       -> error "draft didn't have an author!"
+
+
+getAuthorId :: B.ByteString -> Connection -> IO (Maybe Integer)
+getAuthorId uId conn = do
+  authorId <- query conn "SELECT author_id FROM authors WHERE users_id = ?"
+    [uId]
+  case authorId of
+    [[aId]] -> return $ Just aId
+    _       -> return Nothing
+
 authResponse :: Maybe AuthData -> (Connection -> IO Response) -> Connection -> IO Response
 authResponse auth respond conn = do
   isAdmin <- authorizeAdmin auth conn

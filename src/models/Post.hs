@@ -96,3 +96,18 @@ getPostsTagsAll tagsAll conn =
 
 getArr :: B.ByteString -> B.ByteString
 getArr = B.init . B.tail
+
+getPostsDate :: B.ByteString -> Connection -> IO [Post]
+getPostsDate date conn =
+  query conn "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
+    [date]
+
+getPostsDateLt :: B.ByteString -> Connection -> IO [Post]
+getPostsDateLt dateLt conn = 
+  query conn "SELECT * FROM posts WHERE DATE(creation_time) < DATE ?"
+    [dateLt]
+
+getPostsDateGt :: B.ByteString -> Connection -> IO [Post]
+getPostsDateGt dateGt conn =
+  query conn "SELECT * FROM posts WHERE DATE(creation_time) > DATE ?"
+    [dateGt]

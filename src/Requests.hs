@@ -84,10 +84,16 @@ processFilterGetRequest ["posts"] [("tags_in", Just tagsIn)] c =
   respondJson <$> P.getPostsTagsIn tagsIn c
 processFilterGetRequest ["posts"] [("tags_all", Just tagsAll)] c =
   respondJson <$> P.getPostsTagsAll tagsAll c
+processFilterGetRequest ["posts"] [("created_at", Just date)] c =
+  respondJson <$> P.getPostsDate date c
+processFilterGetRequest ["posts"] [("created_at__lt", Just dateLt)] c =
+  respondJson <$> P.getPostsDateLt dateLt c
+processFilterGetRequest ["posts"] [("created_at__gt", Just dateGt)] c =
+  respondJson <$> P.getPostsDateGt dateGt c
 {-
-/posts?tag=123
-/posts?tags__in=[123,124,125]
-/posts?tags__all=[123,124,125]
+/posts?created_at=2018-05-21
+/posts?created_at__lt=2018-05-21
+/posts?created_at__gt=2018-05-21
 -}
 
 respondJson :: ToJSON m => [m] -> Response

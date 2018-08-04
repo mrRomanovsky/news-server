@@ -31,7 +31,7 @@ processPostRequest request c = do
   rBody <- strictRequestBody request
   let auth = lookup hAuthorization $ requestHeaders request
   case pathInfo request of
-    ("users" : xs) -> postUser xs rBody c
+    ("users" : xs) -> postUser xs rBody auth c
     ("tags" : xs) -> authResponse auth (postTag xs rBody) c
     ("authors" : xs) -> authResponse auth (postAuthor xs rBody) c
     ("categories" : xs) -> authResponse auth (postCategory xs rBody) c
@@ -47,9 +47,10 @@ postCategory [] c = createModel $ decodeCategory c
 postCategory ["update"] c = updateModel $ decodeCategory c
 postCategory ["delete"] cId = deleteModel (eitherDecode cId :: Either String C.CategoryId)
 
-postUser :: [Text] -> B.ByteString -> Connection -> IO Response
-postUser [] u = createModel $ decodeUser u
-postUser ["delete"] uId = deleteModel (eitherDecode uId :: Either String U.UserId)
+postUser :: [Text] -> B.ByteString -> Maybe AuthData -> Connection -> IO Response
+postUser [] u _ = createModel $ decodeUser u
+postUser ["delete"] uId auth = authResponse auth $
+  deleteModel (eitherDecode uId :: Either String U.UserId)
 
 postDraft :: [Text] -> B.ByteString -> Connection -> IO Response
 postDraft [] d = createModel $ decodeDraft d

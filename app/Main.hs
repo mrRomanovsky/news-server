@@ -21,16 +21,15 @@ application request respond = do
     , connectUser = "news-server"
     , connectPassword = "news-server" 
   }
-  authorizeAdmin request c >>= print
   let method = requestMethod request
       path = pathInfo request
   if method == methodGet
      then case queryString request of
-      [] -> processGetRequest path c >>= respond
+      [] -> processGetRequest request c >>= respond
       qs -> processFilterGetRequest path qs c >>= respond
      else do
       rBody <- strictRequestBody request
-      processPostRequest path c rBody >>= respond
+      processPostRequest request c >>= respond
 
                      {-query = queryString request
                      in processAppRequest path query >>= respond

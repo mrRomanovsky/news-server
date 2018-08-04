@@ -2,6 +2,8 @@
 
 module DbRequests where
 
+import Network.Wai
+import Network.HTTP.Types (status200, status404, hAuthorization, Query)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
@@ -12,7 +14,24 @@ import Control.Monad
 import Control.Applicative
 import Data.Text
 
---'abc' LIKE 'a%'     true
+type AuthData = B.ByteString
+
+authorizedResponse :: Maybe AuthData -> (Connection -> IO Response) -> Connection -> IO Response
+authorizedResponse auth respond conn = do
+  isAdmin <- authorizeAdmin auth conn
+  if isAdmin
+     then respond conn
+     else return notFound
+
+notFound :: Response
+notFound = responseLBS
+    status404
+    [("Content-Type", "text/plain")]
+    "404 - Not Found"
+
+authorizeAdmin :: Maybe AuthData -> Connection -> IO Bool
+authorizeAdmin auth conn = 
+  maybe (return False) (`checkAdmin` conn) auth
 
 checkAdmin :: B.ByteString -> Connection -> IO Bool
 checkAdmin uId conn = do

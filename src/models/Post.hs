@@ -14,6 +14,7 @@ import Model
 import DbRequests
 import Data.Aeson
 import GHC.Generics
+import Data.String (fromString)
 import Data.Text hiding (takeWhile)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Attoparsec.Text
@@ -22,7 +23,7 @@ import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
 import qualified Data.ByteString as B
-import Data.Vector
+import Data.Vector hiding ((++))
 import qualified Database.PostgreSQL.Simple.Time as T
 
 data Post = Post { postId :: PostId, postName :: Text, creation_date :: T.LocalTimestamp
@@ -62,52 +63,87 @@ instance ToJSON Post
 instance FromRow Post where
   fromRow = Post <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
-getPostsByAuthor :: B.ByteString -> Connection -> IO [Post]
-getPostsByAuthor author conn =
-  query conn "SELECT * FROM posts \
-             \WHERE author_id = (SELECT author_id FROM authors \
-               \WHERE users_id = (SELECT users_id FROM users \
-                 \WHERE users_name = ?))" [author]
+getPostsByAuthor :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsByAuthor author p conn =
+  query conn (paginate postsByAuthor p) [author]
 
-getPostsWithSubstrInContent :: B.ByteString -> Connection -> IO [Post]
-getPostsWithSubstrInContent substr conn =
-  query conn "SELECT * FROM posts WHERE text_content LIKE ?"
+getPostsWithSubstrInContent :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsWithSubstrInContent substr p conn =
+  query conn (paginate postsWithSubstrInContent p)
     ["%" `B.append` substr `B.append` "%"]
 
-getPostsWithSubstrInName :: B.ByteString -> Connection -> IO [Post]
-getPostsWithSubstrInName substr conn =
-  query conn "SELECT * FROM posts WHERE post_name LIKE ?"
+getPostsWithSubstrInName :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsWithSubstrInName substr p conn =
+  query conn (paginate postsWithSubstrInName p)
     ["%" `B.append` substr `B.append` "%"]
 
-getPostsWithTag :: B.ByteString -> Connection -> IO [Post]
-getPostsWithTag tag conn =
-  query conn "SELECT * FROM posts WHERE tags @> ?"
+getPostsWithTag :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsWithTag tag p conn =
+  query conn (paginate postsWithTag p)
     ["{" `B.append` tag `B.append` "}"]
 
-getPostsTagsIn :: B.ByteString -> Connection -> IO [Post]
-getPostsTagsIn tagsIn conn = 
-  query conn "SELECT * FROM posts WHERE tags && ?"
+getPostsTagsIn :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsTagsIn tagsIn p conn = 
+  query conn (paginate postsTagsIn p)
     ["{" `B.append` getArr tagsIn `B.append` "}"]
 
-getPostsTagsAll :: B.ByteString -> Connection -> IO [Post]
-getPostsTagsAll tagsAll conn =
-  query conn "SELECT * FROM posts WHERE tags @> ?"
+getPostsTagsAll :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsTagsAll tagsAll p conn =
+  query conn (paginate postsTagsAll p)
     ["{" `B.append` getArr tagsAll `B.append` "}"]
+
+postsByAuthor :: Query
+postsByAuthor = "SELECT * FROM posts \
+\WHERE author_id = (SELECT author_id FROM authors \
+  \WHERE users_id = (SELECT users_id FROM users \
+    \WHERE users_name = ?))"
+
+postsWithSubstrInContent :: Query
+postsWithSubstrInContent = "SELECT * FROM posts WHERE text_content LIKE ?"
+
+postsWithSubstrInName :: Query
+postsWithSubstrInName = "SELECT * FROM posts WHERE post_name LIKE ?"
+
+postsWithTag :: Query
+postsWithTag = "SELECT * FROM posts WHERE tags @> ?"
+
+postsTagsIn :: Query
+postsTagsIn = "SELECT * FROM posts WHERE tags && ?"
+
+postsTagsAll :: Query
+postsTagsAll = "SELECT * FROM posts WHERE tags @> ?"
 
 getArr :: B.ByteString -> B.ByteString
 getArr = B.init . B.tail
 
-getPostsDate :: B.ByteString -> Connection -> IO [Post]
-getPostsDate date conn =
-  query conn "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
+getPostsDate :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsDate date p conn =
+  query conn (paginate postsDate p)
     [date]
 
-getPostsDateLt :: B.ByteString -> Connection -> IO [Post]
-getPostsDateLt dateLt conn = 
-  query conn "SELECT * FROM posts WHERE DATE(creation_time) < DATE ?"
+getPostsDateLt :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsDateLt dateLt p conn = 
+  query conn (paginate postsDateLt p)
     [dateLt]
 
-getPostsDateGt :: B.ByteString -> Connection -> IO [Post]
-getPostsDateGt dateGt conn =
-  query conn "SELECT * FROM posts WHERE DATE(creation_time) > DATE ?"
+getPostsDateGt :: B.ByteString -> Maybe Page -> Connection -> IO [Post]
+getPostsDateGt dateGt p conn =
+  query conn (paginate postsDateGt p)
     [dateGt]
+
+
+paginate :: Query -> Maybe Page -> Query
+paginate q p =
+  let offset = maybe 0 ((*20) . (subtract 1)) p
+      qStr = Prelude.init $ Prelude.tail $ show q
+      in fromString $ qStr ++
+        "OFFSET " ++ show offset ++ " LIMIT 20"
+
+postsDate :: Query
+postsDate = "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
+
+postsDateGt :: Query
+postsDateGt = "SELECT * FROM posts WHERE DATE(creation_time) > DATE ?"
+
+postsDateLt :: Query
+postsDateLt = "SELECT * FROM posts WHERE DATE(creation_time) < DATE ?"

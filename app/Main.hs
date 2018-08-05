@@ -23,13 +23,20 @@ application request respond = do
   }
   let method = requestMethod request
       path = pathInfo request
+      qString = queryString request
   if method == methodGet
-     then case queryString request of
-      _ -> processGetRequest request c >>= respond
-      --qs -> processFilterGetRequest path qs c >>= respond
+     then if null qString || fst (head qString) == "page"
+             then processGetRequest request c >>= respond
+             else processFilterGetRequest request c >>= respond
      else do
       rBody <- strictRequestBody request
       processPostRequest request c >>= respond
+
+{-
+  let mPage = lookup "page" $ queryString request
+      page = mPage >>=
+        maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
+-}
 
                      {-query = queryString request
                      in processAppRequest path query >>= respond

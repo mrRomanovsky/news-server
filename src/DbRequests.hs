@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-
+{-# LANGUAGE RankNTypes #-}
 module DbRequests where
-
+import Model (Model)
 import Network.Wai
 import Network.HTTP.Types (status200, status404, hAuthorization, Query)
-import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple hiding (Query)
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
-import Database.PostgreSQL.Simple.Types
+import Database.PostgreSQL.Simple.Types hiding (Query)
 import qualified Data.ByteString as B
 import Data.Text.Encoding (decodeUtf8)
 import Control.Monad
@@ -15,7 +15,16 @@ import Control.Applicative
 import Data.Text
 
 type AuthData = B.ByteString
+{-
+type QueryGet = forall m id. Model m id=> Query -> Connection -> IO [m]
 
+paginate :: Model m id => Query -> Maybe Integer -> QueryGet -> Connection -> IO [m]
+paginate q Nothing qGet = qGet $
+  read $ show q ++ " LIMIT 20"
+paginate q (Just page) qGet = qGet $
+  read $ show q ++ " OFFSET " ++ show page
+      ++ " LIMIT 20" 
+-}
 getDraftAuthor :: Integer -> Connection -> IO Integer
 getDraftAuthor dId conn = do
   authorId <- query conn "SELECT author_id FROM drafts WHERE draft_id = ?"

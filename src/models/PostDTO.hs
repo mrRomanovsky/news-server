@@ -65,12 +65,23 @@ instance FromRow PostDTO where
 
 getPostsBySubstr :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsBySubstr substr p conn = 
-  query conn (paginate postsWithSubstr p) [substr, substr, substr]
+  let
+    substrRegex = "%" `B.append` substr `B.append` "%"
+    in query conn (paginate postsWithSubstr p) (substrRegex, substrRegex, substrRegex)
 
 postsWithSubstr :: Query
-postsWithSubstr = "SELECT * FROM posts USING authors WHERE \
-  \text_content LIKE ? || post_name LIKE ? \
-  \|| author_id = authors.author_id && (SELECT users_name FROM users WHERE users_id = authors.users_id) LIKE ?"
+postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
+  \ON posts.author_id = authors.author_id \
+  \JOIN users ON authors.users_id = users.users_id) \
+  \WHERE (posts.text_content LIKE ?) OR (posts.post_name LIKE ?) \
+  \OR (users.users_name LIKE ?) "
+
+{-
+select t1.name, t2.image_id, t3.path
+from table1 t1 inner join table2 t2 on t1.person_id = t2.person_id
+inner join table3 t3 on t2.image_id=t3.image_id
+
+-}
 
 {-
 DELETE FROM films USING producers
@@ -132,7 +143,7 @@ postsWithSubstrInContent :: Query
 postsWithSubstrInContent = "SELECT * FROM posts WHERE text_content LIKE ?"
 
 postsWithSubstrInName :: Query
-postsWithSubstrInName = "SELECT * FROM posts WHERE PostDTO_name LIKE ?"
+postsWithSubstrInName = "SELECT * FROM posts WHERE post_name LIKE ?"
 
 postsWithTag :: Query
 postsWithTag = "SELECT * FROM posts WHERE tags @> ?"

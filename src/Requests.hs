@@ -157,6 +157,8 @@ processFilterGetRequest request c =
           respondJson <$> (dtosToPosts c $ P.getPostsDateGt dateGt page c)
         ("category", Just cat) ->
           respondJson <$> (dtosToPosts c $ P.getPostsByCategory cat page c)
+        ("substr", Just substr) ->
+          respondJson <$> (dtosToPosts c $ P.getPostsBySubstr substr page c)
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode

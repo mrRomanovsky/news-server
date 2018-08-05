@@ -102,15 +102,19 @@ decodeCategory = eitherDecode :: B.ByteString -> Either String C.Category
 decodeDraft = eitherDecode :: B.ByteString -> Either String D.Draft
 
 processGetRequest :: Request -> Connection -> IO Response
-processGetRequest request = case pathInfo request of
-  ["drafts"]     -> fmap respondJson . (read :: Connection -> IO [D.Draft])
-  ["tags"]       -> fmap respondJson . (read :: Connection -> IO [T.Tag])
-  ["categories"] -> fmap respondJson . (read :: Connection -> IO [C.Category])
-  ["users"]      -> fmap respondJson . (read :: Connection -> IO [U.User])
+processGetRequest request =
+  let mPage = lookup "page" $ queryString request
+      page = mPage >>=
+        maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
+      in case pathInfo request of
+  ["drafts"]     -> fmap respondJson . (read page :: Connection -> IO [D.Draft])
+  ["tags"]       -> fmap respondJson . (read page :: Connection -> IO [T.Tag])
+  ["categories"] -> fmap respondJson . (read page :: Connection -> IO [C.Category])
+  ["users"]      -> fmap respondJson . (read page :: Connection -> IO [U.User])
   ["authors"]    ->
     let auth = lookup hAuthorization $ requestHeaders request
-        in authResponse auth $ fmap respondJson . (read :: Connection -> IO [A.Author])
-  ["posts"]      -> fmap respondJson . (read :: Connection -> IO [P.Post])
+        in authResponse auth $ fmap respondJson . (read page :: Connection -> IO [A.Author])
+  ["posts"]      -> fmap respondJson . (read page :: Connection -> IO [P.Post])
 
 processFilterGetRequest :: [Text] -> Query -> Connection -> IO Response
 processFilterGetRequest ["posts"] [("author_name", Just author)] c =

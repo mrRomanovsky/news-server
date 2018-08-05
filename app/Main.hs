@@ -25,8 +25,8 @@ application request respond = do
       path = pathInfo request
   if method == methodGet
      then case queryString request of
-      [] -> processGetRequest request c >>= respond
-      qs -> processFilterGetRequest path qs c >>= respond
+      _ -> processGetRequest request c >>= respond
+      --qs -> processFilterGetRequest path qs c >>= respond
      else do
       rBody <- strictRequestBody request
       processPostRequest request c >>= respond

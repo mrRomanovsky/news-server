@@ -58,6 +58,9 @@ checkAdmin uId conn = do
     [[True]] -> return True
     _      -> return False
 
-getRecords :: FromRow m => Text -> Connection -> IO [m]
-getRecords table conn =
-  query conn "SELECT * FROM ?" [Identifier table] -- $ Identifier table
+getRecords :: FromRow m => Text -> Maybe Integer -> Connection -> IO [m]
+getRecords table Nothing conn =
+  query conn "SELECT * FROM ? LIMIT 20" [Identifier table]
+getRecords table (Just page) conn =
+  let offset = (page - 1) * 20
+      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)

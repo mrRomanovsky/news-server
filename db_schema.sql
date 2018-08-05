@@ -40,7 +40,7 @@ INSERT INTO authors (users_id)
 CREATE TABLE categories (
   category_id serial PRIMARY KEY,
   category_name varchar(50) NOT NULL,
-  category_parent integer references categories(category_id)
+  nested_categories integer[]
 );
 
 INSERT INTO categories (category_name) VALUES

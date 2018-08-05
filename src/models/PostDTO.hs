@@ -92,11 +92,19 @@ getPostsTagsAll tagsAll p conn =
   query conn (paginate postsTagsAll p)
     ["{" `B.append` getArr tagsAll `B.append` "}"]
 
+getPostsByCategory :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
+getPostsByCategory cat p conn =
+  query conn (paginate postsTagsAll p)
+    [cat]
+
 postsByAuthor :: Query
 postsByAuthor = "SELECT * FROM posts \
 \WHERE author_id = (SELECT author_id FROM authors \
   \WHERE users_id = (SELECT users_id FROM users \
     \WHERE users_name = ?))"
+
+postsByCategory :: Query
+postsByCategory = "SELECT * FROM posts WHERE category_id = ?"
 
 postsWithSubstrInContent :: Query
 postsWithSubstrInContent = "SELECT * FROM posts WHERE text_content LIKE ?"

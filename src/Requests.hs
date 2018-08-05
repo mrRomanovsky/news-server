@@ -116,9 +116,12 @@ processGetRequest request =
     let auth = lookup hAuthorization $ requestHeaders request
         in authResponse auth $ fmap respondJson . (read page :: Connection -> IO [A.Author])
   ["posts"]      -> fmap respondJson .
-   (\c -> do
-    dtos <- read page c :: IO [P.PostDTO]
-    sequence $ PS.dtoToPost c <$> dtos)
+   (\c -> dtosToPosts c $ read page c)
+
+dtosToPosts :: Connection -> IO [P.PostDTO] -> IO [PS.Post]
+dtosToPosts c dtosIO = do
+  dtos <- dtosIO
+  sequence $ PS.dtoToPost c <$> dtos
 
 {-processPostsGetRequest :: Query -> Connection -> IO Response
 processPostsGetRequest-}
@@ -133,49 +136,27 @@ processFilterGetRequest request c =
         maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
       in case head queryStr of
         ("author_name", Just author) ->
-          respondJson <$> P.getPostsByAuthor author page c
+          respondJson <$> (dtosToPosts c $ P.getPostsByAuthor author page c)
         ("content_substr", Just author) ->
-          respondJson <$> P.getPostsWithSubstrInContent author page c
+          respondJson <$> (dtosToPosts c $ P.getPostsWithSubstrInContent author page c)
         ("name_substr", Just author) ->
-          respondJson <$> P.getPostsWithSubstrInName author page c
+          respondJson <$> (dtosToPosts c $ P.getPostsWithSubstrInName author page c)
         ("tag", Just tag) -> do
           print "I'm here!"
           print page
-          respondJson <$> P.getPostsWithTag tag page c
+          respondJson <$> (dtosToPosts c $ P.getPostsWithTag tag page c)
         ("tags_in", Just tagsIn) ->
-          respondJson <$> P.getPostsTagsIn tagsIn page c
+          respondJson <$> (dtosToPosts c $ P.getPostsTagsIn tagsIn page c)
         ("tags_all", Just tagsAll) ->
-          respondJson <$> P.getPostsTagsAll tagsAll page c
+          respondJson <$> (dtosToPosts c $ P.getPostsTagsAll tagsAll page c)
         ("created_at", Just date) ->
-          respondJson <$> P.getPostsDate date page c
+          respondJson <$> (dtosToPosts c $ P.getPostsDate date page c)
         ("created_at__lt", Just dateLt) ->
-          respondJson <$> P.getPostsDateLt dateLt page c
+          respondJson <$> (dtosToPosts c $ P.getPostsDateLt dateLt page c)
         ("created_at__gt", Just dateGt) ->
-          respondJson <$> P.getPostsDateGt dateGt page c
-{-processFilterGetRequest ["posts"] [("author_name", Just author)] c =
-  respondJson <$> P.getPostsByAuthor author c
-processFilterGetRequest ["posts"] [("content_substr", Just author)] c =
-  respondJson <$> P.getPostsWithSubstrInContent author c
-processFilterGetRequest ["posts"] [("name_substr", Just author)] c =
-  respondJson <$> P.getPostsWithSubstrInName author c
-processFilterGetRequest ["posts"] [("tag", Just tag)] c =
-  respondJson <$> P.getPostsWithTag tag c
-processFilterGetRequest ["posts"] [("tags_in", Just tagsIn)] c =
-  respondJson <$> P.getPostsTagsIn tagsIn c
-processFilterGetRequest ["posts"] [("tags_all", Just tagsAll)] c =
-  respondJson <$> P.getPostsTagsAll tagsAll c
-processFilterGetRequest ["posts"] [("created_at", Just date)] c =
-  respondJson <$> P.getPostsDate date c
-processFilterGetRequest ["posts"] [("created_at__lt", Just dateLt)] c =
-  respondJson <$> P.getPostsDateLt dateLt c
-processFilterGetRequest ["posts"] [("created_at__gt", Just dateGt)] c =
-  respondJson <$> P.getPostsDateGt dateGt c-}
-
-{-
-  let mPage = lookup "page" $ queryString request
-      page = mPage >>=
-        maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
--}
+          respondJson <$> (dtosToPosts c $ P.getPostsDateGt dateGt page c)
+        ("category", Just cat) ->
+          respondJson <$> (dtosToPosts c $ P.getPostsByCategory cat page c)
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson = responseLBS status200 [("Content-Type", "application/json")] . encode

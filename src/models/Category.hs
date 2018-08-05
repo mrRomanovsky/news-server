@@ -10,6 +10,7 @@ import DbRequests
 import Control.Applicative
 import GHC.Generics
 import Data.Text
+import Data.Vector
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.ToField
@@ -17,7 +18,7 @@ import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
 --import qualified Data.ByteString as B
 
-data Category = Category {categoryId :: CategoryId, name :: Text, parentId :: Maybe Integer} deriving (Show, Generic)
+data Category = Category {categoryId :: CategoryId, name :: Text, nestedCategories :: Maybe (Vector Integer)} deriving (Show, Generic)
 
 newtype CategoryId = CategoryId {cId :: Integer}
 
@@ -39,15 +40,15 @@ instance ToField CategoryId where
   toField = toField . cId
 
 instance Model Category CategoryId where
-  create Category{Category.name = n, Category.parentId = pId} conn = do
-    execute conn "INSERT INTO categories(category_name, category_parent) values (?,?)"
+  create Category{Category.name = n, Category.nestedCategories = pId} conn = do
+    execute conn "INSERT INTO categories(category_name, nestedCategories) values (?,?)"
       (n, pId)
     return ()
 
   read = getRecords "categories"
 
-  update Category{Category.categoryId = cId, Category.name = n, Category.parentId = pId} conn = do
-    execute conn "UPDATE categories SET category_name=?, category_parent=? WHERE category_id=?"
+  update Category{Category.categoryId = cId, Category.name = n, Category.nestedCategories = pId} conn = do
+    execute conn "UPDATE categories SET category_name=?, nested_categories=? WHERE category_id=?"
              (n, pId, cId)
     return () --maybe I should do something with execute to remove this "retur
     

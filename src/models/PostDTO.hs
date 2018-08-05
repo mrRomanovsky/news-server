@@ -63,6 +63,28 @@ instance ToJSON PostDTO
 instance FromRow PostDTO where
   fromRow = PostDTO <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
+getPostsBySubstr :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
+getPostsBySubstr substr p conn = 
+  query conn (paginate postsWithSubstr p) [substr, substr, substr]
+
+postsWithSubstr :: Query
+postsWithSubstr = "SELECT * FROM posts USING authors WHERE \
+  \text_content LIKE ? || post_name LIKE ? \
+  \|| author_id = authors.author_id && (SELECT users_name FROM users WHERE users_id = authors.users_id) LIKE ?"
+
+{-
+DELETE FROM films USING producers
+  WHERE producer_id = producers.id AND producers.name = 'foo';
+-}
+{-
+API новостей должно поддерживать поиск по строке, которая может быть найдена либо в текстовом контенте, либо в имени автора, либо в названии категории/тега
+API новостей должно поддерживать сортировку по:
+дате,
+автору (имя по алфавиту), 
+по категориям (название по алфавиту), 
+по количеству фотографий
+-}
+
 getPostsByAuthor :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsByAuthor author p conn =
   query conn (paginate postsByAuthor p) [author]

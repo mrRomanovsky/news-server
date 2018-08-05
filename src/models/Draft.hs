@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Draft where
-import qualified Post as P
+import qualified PostDTO as P
 import qualified User as U
 import Data.Aeson
 import DbRequests

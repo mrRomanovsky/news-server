@@ -6,7 +6,8 @@ module Requests (processPostRequest, processGetRequest, processFilterGetRequest)
 
 import Prelude hiding (read)
 import qualified Tag as T
-import qualified Post as P
+import qualified PostDTO as P
+import qualified Post as PS
 import qualified Draft as D
 import qualified User as U
 import qualified Author as A
@@ -114,7 +115,10 @@ processGetRequest request =
   ["authors"]    ->
     let auth = lookup hAuthorization $ requestHeaders request
         in authResponse auth $ fmap respondJson . (read page :: Connection -> IO [A.Author])
-  ["posts"]      -> fmap respondJson . (read page :: Connection -> IO [P.Post])
+  ["posts"]      -> fmap respondJson .
+   (\c -> do
+    dtos <- read page c :: IO [P.PostDTO]
+    sequence $ PS.dtoToPost c <$> dtos)
 
 {-processPostsGetRequest :: Query -> Connection -> IO Response
 processPostsGetRequest-}

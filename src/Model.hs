@@ -6,6 +6,7 @@ module Model where
 import Database.PostgreSQL.Simple
 import Data.Aeson
 import Database.PostgreSQL.Simple.Types
+import qualified Data.ByteString as B
 
 type Page = Integer --for pagination
 
@@ -14,7 +15,7 @@ type Page = Integer --for pagination
 
 class (ToJSON m, FromRow m) => Model m id | m -> id, id -> m where
   create :: m -> Connection -> IO ()
-  read :: Maybe Page -> Connection -> IO [m]
+  read :: Maybe Page -> Maybe B.ByteString -> Connection -> IO [m]
   update :: m -> Connection -> IO ()
   delete :: Model m id => id -> Connection -> IO ()
 

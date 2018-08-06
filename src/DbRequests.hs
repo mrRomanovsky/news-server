@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+
 module DbRequests where
-import Model (Model)
+import Model
+import Data.String (fromString)
 import Network.Wai
 import Network.HTTP.Types (status200, status404, hAuthorization, Query)
-import Database.PostgreSQL.Simple hiding (Query)
+import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Types hiding (Query)
@@ -67,9 +69,25 @@ checkAdmin uId conn = do
     [[True]] -> return True
     _      -> return False
 
-getRecords :: FromRow m => Text -> Maybe Integer -> Connection -> IO [m]
-getRecords table Nothing conn =
+getRecords :: FromRow m => Text -> Maybe Integer -> Maybe B.ByteString -> Connection -> IO [m]
+getRecords table page sortParam conn = 
+  let defSort = if Data.Text.head table == 'u'
+                   then table `append` "_id"
+                   else Data.Text.init table `append` "_id"
+      sortP = Identifier $ maybe defSort decodeUtf8 sortParam
+      in query conn (paginate selectOrdered page) (Identifier table, sortP)
+{-getRecords table Nothing conn =
   query conn "SELECT * FROM ? LIMIT 20" [Identifier table]
 getRecords table (Just page) conn =
   let offset = (page - 1) * 20
-      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)
+      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)-}
+
+selectOrdered :: Database.PostgreSQL.Simple.Query
+selectOrdered = "SELECT * FROM ? ORDER BY ?"
+
+paginate :: Database.PostgreSQL.Simple.Query -> Maybe Page -> Database.PostgreSQL.Simple.Query
+paginate q p =
+  let offset = maybe 0 ((*20) . (subtract 1)) p
+      qStr = Prelude.init $ Prelude.tail $ show q
+      in fromString $ qStr ++
+        "OFFSET " ++ show offset ++ " LIMIT 20"

@@ -21,6 +21,7 @@ import Data.Text.Encoding (decodeUtf8)
 import Data.Attoparsec.Text
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.Types 
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
 import qualified Data.ByteString as B
@@ -102,7 +103,22 @@ postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
   \JOIN users ON authors.users_id = users.users_id) \
   \WHERE (posts.text_content LIKE ?) OR (posts.post_name LIKE ?) \
   \OR (users.users_name LIKE ?) "
-  
+
+{-
+getRecords :: FromRow m => Text -> Maybe Integer -> Connection -> IO [m]
+getRecords table Nothing conn =
+  query conn "SELECT * FROM ? LIMIT 20" [Identifier table]
+getRecords table (Just page) conn =
+  let offset = (page - 1) * 20
+      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)
+-}
+
+getPostsSorted :: Text -> Maybe Integer -> Connection -> IO [PostDTO]
+getPostsSorted sortParam p conn =
+  query conn (paginate postsSorted p) [Identifier sortParam]
+
+postsSorted :: Query
+postsSorted = "SELECT * FROM posts ORDER BY ? "
 {-
 API новостей должно поддерживать сортировку по:
 дате,
@@ -187,14 +203,14 @@ getPostsDateGt dateGt p conn =
   query conn (paginate postsDateGt p)
     [dateGt]
 
-
+{-
 paginate :: Query -> Maybe Page -> Query
 paginate q p =
   let offset = maybe 0 ((*20) . (subtract 1)) p
       qStr = Prelude.init $ Prelude.tail $ show q
       in fromString $ qStr ++
         "OFFSET " ++ show offset ++ " LIMIT 20"
-
+-}
 postsDate :: Query
 postsDate = "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
 

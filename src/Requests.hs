@@ -13,6 +13,7 @@ import qualified User as U
 import qualified Author as A
 import qualified Category as C
 import Model
+import Control.Monad (join)
 import DbRequests
 import Data.Text hiding (head)
 import Data.Text.Encoding (decodeUtf8)
@@ -118,18 +119,19 @@ decodeDraft = eitherDecode :: B.ByteString -> Either String D.Draft
 processGetRequest :: Request -> Connection -> IO Response
 processGetRequest request =
   let mPage = lookup "page" $ queryString request
+      sortBy = join $ lookup "sort_by" $ queryString request
       page = mPage >>=
         maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
       in case pathInfo request of
-  ["drafts"]     -> fmap respondJson . (read page :: Connection -> IO [D.Draft])
-  ["tags"]       -> fmap respondJson . (read page :: Connection -> IO [T.Tag])
-  ["categories"] -> fmap respondJson . (read page :: Connection -> IO [C.Category])
-  ["users"]      -> fmap respondJson . (read page :: Connection -> IO [U.User])
+  ["drafts"]     -> fmap respondJson . (read page sortBy :: Connection -> IO [D.Draft])
+  ["tags"]       -> fmap respondJson . (read page sortBy :: Connection -> IO [T.Tag])
+  ["categories"] -> fmap respondJson . (read page sortBy :: Connection -> IO [C.Category])
+  ["users"]      -> fmap respondJson . (read page sortBy :: Connection -> IO [U.User])
   ["authors"]    ->
     let auth = lookup hAuthorization $ requestHeaders request
-        in authResponse auth $ fmap respondJson . (read page :: Connection -> IO [A.Author])
+        in authResponse auth $ fmap respondJson . (read page sortBy :: Connection -> IO [A.Author])
   ["posts"]      -> fmap respondJson .
-   (\c -> dtosToPosts c $ read page c)
+   (\c -> dtosToPosts c $ read page sortBy c)
   ["posts", n, "comments"] -> fmap respondJson . P.getPostComments n page
 
 dtosToPosts :: Connection -> IO [P.PostDTO] -> IO [PS.Post]

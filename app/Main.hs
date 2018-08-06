@@ -26,6 +26,7 @@ application request respond = do
       qString = queryString request
   if method == methodGet
      then if null qString || fst (head qString) == "page"
+             || fst (head qString) == "sort_by"
              then processGetRequest request c >>= respond
              else processFilterGetRequest request c >>= respond
      else

@@ -12,15 +12,15 @@ DROP TABLE IF EXISTS drafts CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
 
 CREATE TABLE users (
-  users_id serial PRIMARY KEY, 
-  users_name varchar(50) NOT NULL,
-  users_surname varchar(50) NOT NULL,
-  avatar varchar(100) NOT NULL,
-  creation_time timestamp default current_timestamp,
-  is_admin boolean
+  "user_id" serial PRIMARY KEY, 
+  "user_name" varchar(50) NOT NULL,
+  "user_surname" varchar(50) NOT NULL,
+  "user_avatar" varchar(100) NOT NULL,
+  "user_creation_time" timestamp default current_timestamp,
+  "user_is_admin" boolean
 );
 
-INSERT INTO users (users_name, users_surname, avatar, creation_time, is_admin) VALUES
+INSERT INTO users ("user_name", "user_surname", "user_avatar", "user_creation_time", "user_is_admin") VALUES
   ('Test User 1', 'Test Surname 1', 'http://testcreative.co.uk/wp-content/uploads/2017/10/Test-Logo-Small-Black-transparent-1.png', TIMESTAMP '2017-07-28 19:09:38', TRUE),
   ('Test User 2', 'Test Surname 2', 'https://s3.amazonaws.com/tinycards/image/36125d06520a2f6acdae39d1221e5ca8', TIMESTAMP '2017-07-28 14:14:14', FALSE),
   ('Test User 3', 'Test Surname 3', 'http://oxydy.com/wp-content/uploads/2018/02/test-img-300x194.png', TIMESTAMP '2017-07-28 21:09:40', TRUE),
@@ -28,22 +28,22 @@ INSERT INTO users (users_name, users_surname, avatar, creation_time, is_admin) V
   ('Test User 5', 'Test Surname 5', 'https://vignette.wikia.nocookie.net/googology/images/b/bd/Test.jpg/revision/latest?cb=20180119233937', TIMESTAMP '2017-07-28 12:13:12', TRUE);
 
 CREATE TABLE authors (
-  author_id serial PRIMARY KEY,
-  users_id integer references users,
-  author_desc TEXT
+  "author_id" serial PRIMARY KEY,
+  "user_id" integer references users,
+  "author_desc" TEXT
 );
 
-INSERT INTO authors (users_id)
-  SELECT u.users_id FROM users as u
-    WHERE u.is_admin;
+INSERT INTO authors ("user_id")
+  SELECT u.user_id FROM users as u
+    WHERE u.user_is_admin;
 
 CREATE TABLE categories (
-  category_id serial PRIMARY KEY,
-  category_name varchar(50) NOT NULL,
-  nested_categories integer[]
+  "category_id" serial PRIMARY KEY,
+  "category_name" varchar(50) NOT NULL,
+  "category_nested_categories" integer[]
 );
 
-INSERT INTO categories (category_name) VALUES
+INSERT INTO categories ("category_name") VALUES
   ('Test Category 1'),
   ('Test Category 2'),
   ('Test Category 3'),
@@ -52,11 +52,11 @@ INSERT INTO categories (category_name) VALUES
 
 
 CREATE TABLE tags (
-  tag_id serial PRIMARY KEY,
-  tag_name varchar(50) NOT NULL
+  "tag_id" serial PRIMARY KEY,
+  "tag_name" varchar(50) NOT NULL
 );
 
-INSERT INTO tags (tag_name) VALUES
+INSERT INTO tags ("tag_name") VALUES
   ('tag1'),
   ('tag2'),
   ('tag3'),
@@ -64,19 +64,19 @@ INSERT INTO tags (tag_name) VALUES
   ('tag5');
 
 CREATE TABLE posts (
-  post_id serial PRIMARY KEY,
-  post_name TEXT NOT NULL,
-  creation_time timestamp default current_timestamp,
-  author_id integer references authors,
-  category_id integer references categories,
-  tags INTEGER[],
-  text_content text NOT NULL,
-  main_photo text NOT NULL,
-  additional_photos text[],
-  post_comments text[]
+  "post_id" serial PRIMARY KEY,
+  "post_name" TEXT NOT NULL,
+  "post_creation_time" timestamp default current_timestamp,
+  "author_id" integer references authors,
+  "category_id" integer references categories,
+  "post_tags" INTEGER[],
+  "post_text_content" text NOT NULL,
+  "post_main_photo" text NOT NULL,
+  "post_additional_photos" text[],
+  "post_comments" text[]
 );
 
-INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos, post_comments) VALUES
+INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id", "post_tags", "post_text_content", "post_main_photo", "post_additional_photos", "post_comments") VALUES
   ('Tet Post 1', TIMESTAMP '2017-07-28 10:20:15',
   (SELECT a.author_id FROM authors AS a
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
@@ -84,7 +84,7 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
   array[1, 2, 3], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2'],
   array['WOW!!', 'Great article, bro!']);
 
-INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
+INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id", "post_tags", "post_text_content", "post_main_photo", "post_additional_photos") VALUES
   ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',
   (SELECT a.author_id FROM authors AS a
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 3')
@@ -92,20 +92,20 @@ INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_
   array[1, 2, 3], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
 
 CREATE TABLE drafts (
-  draft_id SERIAL PRIMARY KEY,
-  post_id INTEGER REFERENCES posts,
-  author_id INTEGER REFERENCES authors,
-  post_name TEXT NOT NULL,
-  creation_time timestamp default current_timestamp,
-  category_id INTEGER REFERENCES categories,
-  tags INTEGER[],
-  text_content text NOT NULL,
-  main_photo text NOT NULL,
-  additional_photos text[],
-  post_comments text[]
+  "draft_id" SERIAL PRIMARY KEY,
+  "post_id" INTEGER REFERENCES posts,
+  "author_id" INTEGER REFERENCES authors,
+  "post_name" TEXT NOT NULL,
+  "draft_creation_time" timestamp default current_timestamp,
+  "draft_category_id" INTEGER REFERENCES categories,
+  "draft_tags" INTEGER[],
+  "draft_text_content" text NOT NULL,
+  "draft_main_photo" text NOT NULL,
+  "draft_additional_photos" text[],
+  "draft_comments" text[]
 );
 
-INSERT INTO drafts (post_id, author_id, post_name, category_id, tags, text_content, main_photo, additional_photos) VALUES
+INSERT INTO drafts ("post_id", "author_id", "post_name", "draft_category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
   (1, 1, 'Draft Post Name', 2, array[1, 2, 3], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);
 
 CREATE TABLE comments (

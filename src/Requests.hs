@@ -37,6 +37,19 @@ processPostRequest request c = do
     ("authors" : xs) -> authResponse auth (postAuthor xs rBody) c
     ("categories" : xs) -> authResponse auth (postCategory xs rBody) c
     ("drafts" : xs) -> postDraft xs rBody auth c
+    ("posts" : postId : "comments" : xs) -> postComment xs postId rBody c
+
+postComment :: [Text] -> Text -> B.ByteString -> Connection -> IO Response
+postComment [] pId c conn = P.insertComment pId (B.toStrict c) conn >> commentUpdated
+postComment ["delete"] pId cId conn = P.deleteComment pId (B.toStrict cId) conn >> commentDeleted
+
+commentUpdated :: IO Response
+commentUpdated = return $ responseLBS status200 [("Content-Type", "application/json")]
+  "Model was successfully updated"
+
+commentDeleted :: IO Response
+commentDeleted = return $ responseLBS status200 [("Content-Type", "application/json")]
+  "Model was successfully deleted"
 
 postTag :: [Text] -> B.ByteString -> Connection -> IO Response
 postTag [] t = createModel $ decodeTag t
@@ -117,6 +130,7 @@ processGetRequest request =
         in authResponse auth $ fmap respondJson . (read page :: Connection -> IO [A.Author])
   ["posts"]      -> fmap respondJson .
    (\c -> dtosToPosts c $ read page c)
+  ["posts", n, "comments"] -> fmap respondJson . P.getPostComments n page
 
 dtosToPosts :: Connection -> IO [P.PostDTO] -> IO [PS.Post]
 dtosToPosts c dtosIO = do

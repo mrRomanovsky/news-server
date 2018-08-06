@@ -76,12 +76,13 @@ CREATE TABLE posts (
   post_comments text[]
 );
 
-INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
+INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos, post_comments) VALUES
   ('Tet Post 1', TIMESTAMP '2017-07-28 10:20:15',
   (SELECT a.author_id FROM authors AS a
     WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
-  array[1, 2, 3], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2']);
+  array[1, 2, 3], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2'],
+  array['WOW!!', 'Great article, bro!']);
 
 INSERT INTO posts (post_name, creation_time, author_id, category_id, tags, text_content, main_photo, additional_photos) VALUES
   ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',

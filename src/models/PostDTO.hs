@@ -11,6 +11,7 @@ import User
 import Category
 import Tag
 import Model
+import Control.Monad
 import DbRequests
 import Data.Aeson
 import GHC.Generics
@@ -32,6 +33,7 @@ data PostDTO = PostDTO { postId :: PostId, postName :: Text, creation_date :: T.
                  , additionalPhotos :: Maybe (Vector Text)
                  , comments :: Maybe (Vector Text)} deriving (Show, Generic)
 
+  
 newtype PostId = PostId {pId :: Integer}
 
 instance Show PostId where
@@ -63,6 +65,31 @@ instance ToJSON PostDTO
 instance FromRow PostDTO where
   fromRow = PostDTO <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
 
+insertComment :: Text -> B.ByteString -> Connection -> IO ()
+insertComment pNumber comment conn =
+  void $ execute conn insertCommentQuery (comment, pNumber)
+
+insertCommentQuery :: Query --maybe I should add dimension (1) as a second parameter to array_length?
+insertCommentQuery = "UPDATE posts \
+\SET post_comments[array_length(post_comments, 1) + 1] = ? \
+\WHERE post_id = ?"
+
+deleteComment :: Text -> B.ByteString -> Connection -> IO ()
+deleteComment pNumber cNumber conn = 
+  void $ execute conn deleteCommentQuery (cNumber, pNumber)
+
+deleteCommentQuery :: Query
+deleteCommentQuery = "UPDATE posts \
+\SET post_comments = array_remove(post_comments, post_comments[?]) \
+\WHERE post_id = ?"
+
+getPostComments :: Text -> Maybe Page -> Connection -> IO [[Vector Text]]
+getPostComments pNumber p conn =
+  query conn (paginate postComments p) [pNumber]
+
+postComments :: Query
+postComments = "SELECT post_comments FROM posts WHERE post_id = ?"
+
 getPostsBySubstr :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsBySubstr substr p conn = 
   let
@@ -75,20 +102,8 @@ postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
   \JOIN users ON authors.users_id = users.users_id) \
   \WHERE (posts.text_content LIKE ?) OR (posts.post_name LIKE ?) \
   \OR (users.users_name LIKE ?) "
-
+  
 {-
-select t1.name, t2.image_id, t3.path
-from table1 t1 inner join table2 t2 on t1.person_id = t2.person_id
-inner join table3 t3 on t2.image_id=t3.image_id
-
--}
-
-{-
-DELETE FROM films USING producers
-  WHERE producer_id = producers.id AND producers.name = 'foo';
--}
-{-
-API новостей должно поддерживать поиск по строке, которая может быть найдена либо в текстовом контенте, либо в имени автора, либо в названии категории/тега
 API новостей должно поддерживать сортировку по:
 дате,
 автору (имя по алфавиту), 

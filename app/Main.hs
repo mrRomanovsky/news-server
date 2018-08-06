@@ -28,8 +28,7 @@ application request respond = do
      then if null qString || fst (head qString) == "page"
              then processGetRequest request c >>= respond
              else processFilterGetRequest request c >>= respond
-     else do
-      rBody <- strictRequestBody request
+     else
       processPostRequest request c >>= respond
 
 {-

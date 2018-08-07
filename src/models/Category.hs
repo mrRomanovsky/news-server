@@ -14,9 +14,7 @@ import Data.Vector
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.ToField
-import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
---import qualified Data.ByteString as B
 
 data Category = Category {categoryId :: CategoryId, name :: Text, nestedCategories :: Maybe (Vector Integer)} deriving (Show, Generic)
 
@@ -41,16 +39,16 @@ instance ToField CategoryId where
 
 instance Model Category CategoryId where
   create Category{Category.name = n, Category.nestedCategories = pId} conn = do
-    execute conn "INSERT INTO categories(category_name, nestedCategories) values (?,?)"
+    execute conn "INSERT INTO categories(category_name, category_nested_categories) values (?,?)"
       (n, pId)
     return ()
 
   read = getRecords "categories"
 
   update Category{Category.categoryId = cId, Category.name = n, Category.nestedCategories = pId} conn = do
-    execute conn "UPDATE categories SET category_name=?, nested_categories=? WHERE category_id=?"
+    execute conn "UPDATE categories SET category_name=?, category_nested_categories=? WHERE category_id=?"
              (n, pId, cId)
-    return () --maybe I should do something with execute to remove this "retur
+    return ()
     
   delete cId conn = do
     execute conn "DELETE FROM categories WHERE category_id=?" [cId]
@@ -63,7 +61,3 @@ instance ToJSON Category
 
 instance FromRow Category where
   fromRow = Category <$> field <*> field <*> field
-{-
-Категории (могут быть вложенными, то есть одна категория является подкатегорией для другой) 
-Допустим, есть категория "Языки программирования", и у нее может быть подкатегория "Динамически Типизированные ЯП", и далее, соответственно, подкатегория подкатегории "Python"  — и таких уровней вложенности может быть произвольное количество
--}

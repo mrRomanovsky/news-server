@@ -14,7 +14,6 @@ import Data.Text
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
-import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.FromRow
 
 data Author = Author {authorId :: AuthorId, userId :: Integer, desc :: Maybe Text} deriving (Show, Generic)
@@ -62,8 +61,3 @@ instance Model Author AuthorId where
 
 instance FromRow Author where
   fromRow = Author <$> field <*> field <*> field
-{-
-Авторы
-Ссылка на пользователя (то есть все авторы — пользователи, но не все пользователи — авторы)
-Краткое описание
--}

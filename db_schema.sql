@@ -97,7 +97,7 @@ CREATE TABLE drafts (
   "author_id" INTEGER REFERENCES authors,
   "draft_name" TEXT NOT NULL,
   "draft_creation_time" timestamp default current_timestamp,
-  "draft_category_id" INTEGER REFERENCES categories,
+  "category_id" INTEGER REFERENCES categories,
   "draft_tags" INTEGER[],
   "draft_text_content" text NOT NULL,
   "draft_main_photo" text NOT NULL,
@@ -105,5 +105,5 @@ CREATE TABLE drafts (
   "draft_comments" text[]
 );
 
-INSERT INTO drafts ("post_id", "author_id", "draft_name", "draft_category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
+INSERT INTO drafts ("post_id", "author_id", "draft_name", "category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
   (1, 1, 'Draft Post Name', 2, array[1, 2, 3], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);

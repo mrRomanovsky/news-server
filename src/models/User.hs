@@ -68,7 +68,7 @@ instance ToJSON User
 
 instance Model User UserId where
   create User{User.name = n, User.surname = s, User.avatar = a} conn = do
-    execute conn "INSERT INTO users(users_name, users_surname, avatar, is_admin) values (?, ?, ?, FALSE)"
+    execute conn "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
       (n, s, a)
     return () --maybe I should do something with execute to remove this "return"
 
@@ -76,29 +76,13 @@ instance Model User UserId where
 
   update = error "Sorry, this feature is not implemented yet"
 
-  delete uId conn = do
-    execute conn "DELETE FROM drafts WHERE author_id = (SELECT author_id FROM authors WHERE users_id = ?)" [uId]
+  delete uId conn = do --this should be done in one transaction!
+    execute conn "DELETE FROM drafts WHERE author_id = (SELECT author_id FROM authors WHERE \"user_id\" = ?)" [uId]
     execute conn "DELETE FROM posts WHERE author_id = \
-                    \(SELECT author_id FROM authors WHERE users_id = ?)" [uId]
-    execute conn "DELETE FROM authors WHERE users_id = ?" [uId]
-    execute conn "DELETE FROM users WHERE users_id=?" [uId]
+                    \(SELECT author_id FROM authors WHERE \"user_id\" = ?)" [uId]
+    execute conn "DELETE FROM authors WHERE \"user_id\" = ?" [uId]
+    execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]
     return ()
 
-{-
-query conn "SELECT * FROM ?" [Identifier table] -- $ Identifier table
--}
-
-{-
-DELETE FROM films USING producers
-  WHERE producer_id = producers.id AND producers.name = 'foo'
--}
 instance FromRow User where
   fromRow = User <$> field <*> field <*> field <*> field <*> field <*> field
-{-
-Пользователь
-имя
-фамилия
-аватарка
-дата создания
-админ (булевая переменная)
--}

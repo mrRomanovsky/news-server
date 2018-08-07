@@ -46,11 +46,6 @@ instance FromJSON Tag where
   parseJSON _ = mzero
 
 
-{-instance FromField Text where
-  fromField f Nothing = returnError ConversionFailed f "Nothing returned for A"
-  fromField f (Just bs) = return $ decodeUtf8 bs-}
-
-
 instance FromRow Tag where
   fromRow = Tag <$> field <*> field
 
@@ -69,5 +64,3 @@ instance Model Tag TagId where
   delete tId conn = do
     execute conn "DELETE FROM tags WHERE tag_id=?" [tId]
     return ()
-
-{-select * from foo where 'abc' = ANY(stuff);-}

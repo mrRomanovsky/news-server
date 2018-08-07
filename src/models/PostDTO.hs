@@ -97,9 +97,9 @@ getPostsBySubstr substr =
 postsWithSubstr :: Query
 postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
   \ON posts.author_id = authors.author_id \
-  \JOIN users ON authors.users_id = users.users_id) \
-  \WHERE (posts.text_content LIKE ?) OR (posts.post_name LIKE ?) \
-  \OR (users.users_name LIKE ?) "
+  \JOIN users ON authors.user_id = users.user_id) \
+  \WHERE (posts.post_text_content LIKE ?) OR (posts.post_name LIKE ?) \
+  \OR (users.user_name LIKE ?) "
 
 getPostsSorted :: Text -> Maybe Integer -> Connection -> IO [PostDTO]
 getPostsSorted sortParam = paginatedQuery postsSorted [Identifier sortParam]
@@ -134,26 +134,26 @@ getPostsByCategory cat = paginatedQuery postsTagsAll [cat]
 postsByAuthor :: Query
 postsByAuthor = "SELECT * FROM posts \
 \WHERE author_id = (SELECT author_id FROM authors \
-  \WHERE users_id = (SELECT users_id FROM users \
-    \WHERE users_name = ?))"
+  \WHERE \"user_id\" = (SELECT \"user_id\" FROM users \
+    \WHERE user_name = ?))"
 
 postsByCategory :: Query
 postsByCategory = "SELECT * FROM posts WHERE category_id = ?"
 
 postsWithSubstrInContent :: Query
-postsWithSubstrInContent = "SELECT * FROM posts WHERE text_content LIKE ?"
+postsWithSubstrInContent = "SELECT * FROM posts WHERE post_text_content LIKE ?"
 
 postsWithSubstrInName :: Query
 postsWithSubstrInName = "SELECT * FROM posts WHERE post_name LIKE ?"
 
 postsWithTag :: Query
-postsWithTag = "SELECT * FROM posts WHERE tags @> ?"
+postsWithTag = "SELECT * FROM posts WHERE post_tags @> ?"
 
 postsTagsIn :: Query
-postsTagsIn = "SELECT * FROM posts WHERE tags && ?"
+postsTagsIn = "SELECT * FROM posts WHERE post_tags && ?"
 
 postsTagsAll :: Query
-postsTagsAll = "SELECT * FROM posts WHERE tags @> ?"
+postsTagsAll = "SELECT * FROM posts WHERE post_tags @> ?"
 
 getArr :: B.ByteString -> B.ByteString
 getArr = B.init . B.tail
@@ -168,10 +168,10 @@ getPostsDateGt :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsDateGt dateGt = paginatedQuery postsDateGt [dateGt]
 
 postsDate :: Query
-postsDate = "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
+postsDate = "SELECT * FROM posts WHERE DATE(post_creation_time) = DATE ?"
 
 postsDateGt :: Query
-postsDateGt = "SELECT * FROM posts WHERE DATE(creation_time) > DATE ?"
+postsDateGt = "SELECT * FROM posts WHERE DATE(post_creation_time) > DATE ?"
 
 postsDateLt :: Query
-postsDateLt = "SELECT * FROM posts WHERE DATE(creation_time) < DATE ?"
+postsDateLt = "SELECT * FROM posts WHERE DATE(post_creation_time) < DATE ?"

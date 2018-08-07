@@ -21,7 +21,6 @@ application request respond = do
     "Responded with status : " ++ (show $ responseStatus response)
   return rResult
 
-
 handleRequestException :: SomeException -> IO Response
 handleRequestException e = do
   writeFile "news-server.log" $ "Exception occured during request processing: " ++ show e

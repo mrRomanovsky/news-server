@@ -108,31 +108,37 @@ decodeCategory = eitherDecode :: B.ByteString -> Either String C.Category
 decodeDraft = eitherDecode :: B.ByteString -> Either String D.Draft
 
 updateModel :: Model m id => Either String m -> Connection -> IO Response
-updateModel model conn = do
-  either (\e -> print $ "error parsing model: " ++ e) (`update` conn) model
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Model was successfully updated"
+updateModel model conn =
+  either processBadModel ((>> return responseUpdated) . (`update` conn)) model
+
+responseUpdated =
+  responseLBS status200 [("Content-Type", "application/json")]
+    "Model was successfully updated"
 
 deleteModel :: Model m id => Either String id -> Connection -> IO Response
-deleteModel mId conn = do
-  either (\e -> print $ "error parsing id: " ++ e) (`delete` conn) mId
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Model was successfully deleted from the database"
+deleteModel mId conn =
+  either processBadModel ((>> return responseDeleted) . (`delete` conn)) mId
+
+responseDeleted = 
+  responseLBS status200 [("Content-Type", "application/json")]
+    "Model was successfully deleted from the database"
 
 createModel :: Model m id => Either String m -> Connection -> IO Response
-createModel model conn = do
-  either (\e -> print $ "error parsing model: " ++ e) (`create` conn) model
-  return $ 
-    responseLBS status200 [("Content-Type", "application/json")]
-      "Model was successfully added to the database"
+createModel model conn =
+  either processBadModel ((>> return responseAdded) . (`create` conn)) model
+
+responseAdded = 
+  responseLBS status200 [("Content-Type", "application/json")]
+    "Model was successfully added to the database"
 
 modelError :: Response
 modelError = responseLBS status422 [("Content-Type", "application/json")]
   "Invalid model!"
 
-idError :: Response
-idError = responseLBS status422 [("Content-Type", "application/json")]
-  "Invalid model id!"
---notImplementedFeature = responseLBS status200 [("Content-Type", "text/plain")] "This feature is not yet implemented"
+processBadModel :: String -> IO Response
+processBadModel e = do
+  writeFile "news-server.log" $ "error processing request body: " ++ e
+  return errorResponse
+
+errorResponse :: Response
+errorResponse = responseLBS status422 [("Content-Type", "application/json")] "Bad model/id data!"

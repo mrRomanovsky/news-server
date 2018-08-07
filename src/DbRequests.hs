@@ -17,16 +17,7 @@ import Control.Applicative
 import Data.Text
 
 type AuthData = B.ByteString
-{-
-type QueryGet = forall m id. Model m id=> Query -> Connection -> IO [m]
 
-paginate :: Model m id => Query -> Maybe Integer -> QueryGet -> Connection -> IO [m]
-paginate q Nothing qGet = qGet $
-  read $ show q ++ " LIMIT 20"
-paginate q (Just page) qGet = qGet $
-  read $ show q ++ " OFFSET " ++ show page
-      ++ " LIMIT 20" 
--}
 getDraftAuthor :: Integer -> Connection -> IO Integer
 getDraftAuthor dId conn = do
   authorId <- query conn "SELECT author_id FROM drafts WHERE draft_id = ?"
@@ -34,7 +25,6 @@ getDraftAuthor dId conn = do
   case authorId of
     [[aId]] -> return aId
     _       -> error "draft didn't have an author!"
-
 
 getAuthorId :: B.ByteString -> Connection -> IO (Maybe Integer)
 getAuthorId uId conn = do
@@ -91,3 +81,7 @@ paginate q p =
       qStr = Prelude.init $ Prelude.tail $ show q
       in fromString $ qStr ++
         "OFFSET " ++ show offset ++ " LIMIT 20"
+
+paginatedQuery :: (FromRow m, ToRow q) =>  Database.PostgreSQL.Simple.Query -> q -> Maybe Page -> Connection -> IO [m]
+paginatedQuery queryToPaginate params page conn =
+  query conn (paginate queryToPaginate page) params

@@ -18,7 +18,6 @@ import GHC.Generics
 import Data.String (fromString)
 import Data.Text hiding (takeWhile)
 import Data.Text.Encoding (decodeUtf8)
-import Data.Attoparsec.Text
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Types 
@@ -60,7 +59,6 @@ instance Model PostDTO PostId where
 
   delete = error "Sorry, this feature is not implemented yet"
 
---instance FromJSON PostDTO - not needed yet
 instance ToJSON PostDTO
 
 instance FromRow PostDTO where
@@ -70,7 +68,7 @@ insertComment :: Text -> B.ByteString -> Connection -> IO ()
 insertComment pNumber comment conn =
   void $ execute conn insertCommentQuery (comment, pNumber)
 
-insertCommentQuery :: Query --maybe I should add dimension (1) as a second parameter to array_length?
+insertCommentQuery :: Query
 insertCommentQuery = "UPDATE posts \
 \SET post_comments[array_length(post_comments, 1) + 1] = ? \
 \WHERE post_id = ?"
@@ -85,17 +83,16 @@ deleteCommentQuery = "UPDATE posts \
 \WHERE post_id = ?"
 
 getPostComments :: Text -> Maybe Page -> Connection -> IO [[Vector Text]]
-getPostComments pNumber p conn =
-  query conn (paginate postComments p) [pNumber]
+getPostComments pNumber = paginatedQuery postComments [pNumber]
 
 postComments :: Query
 postComments = "SELECT post_comments FROM posts WHERE post_id = ?"
 
 getPostsBySubstr :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsBySubstr substr p conn = 
+getPostsBySubstr substr = 
   let
     substrRegex = "%" `B.append` substr `B.append` "%"
-    in query conn (paginate postsWithSubstr p) (substrRegex, substrRegex, substrRegex)
+    in paginatedQuery postsWithSubstr (substrRegex, substrRegex, substrRegex)
 
 postsWithSubstr :: Query
 postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
@@ -104,62 +101,35 @@ postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
   \WHERE (posts.text_content LIKE ?) OR (posts.post_name LIKE ?) \
   \OR (users.users_name LIKE ?) "
 
-{-
-getRecords :: FromRow m => Text -> Maybe Integer -> Connection -> IO [m]
-getRecords table Nothing conn =
-  query conn "SELECT * FROM ? LIMIT 20" [Identifier table]
-getRecords table (Just page) conn =
-  let offset = (page - 1) * 20
-      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)
--}
-
 getPostsSorted :: Text -> Maybe Integer -> Connection -> IO [PostDTO]
-getPostsSorted sortParam p conn =
-  query conn (paginate postsSorted p) [Identifier sortParam]
+getPostsSorted sortParam = paginatedQuery postsSorted [Identifier sortParam]
 
 postsSorted :: Query
 postsSorted = "SELECT * FROM posts ORDER BY ? "
-{-
-API новостей должно поддерживать сортировку по:
-дате,
-автору (имя по алфавиту), 
-по категориям (название по алфавиту), 
-по количеству фотографий
--}
 
 getPostsByAuthor :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsByAuthor author p conn =
-  query conn (paginate postsByAuthor p) [author]
+getPostsByAuthor author = paginatedQuery postsByAuthor [author]
 
 getPostsWithSubstrInContent :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithSubstrInContent substr p conn =
-  query conn (paginate postsWithSubstrInContent p)
-    ["%" `B.append` substr `B.append` "%"]
+getPostsWithSubstrInContent substr = paginatedQuery postsWithSubstrInContent ["%" `B.append` substr `B.append` "%"]
+
 
 getPostsWithSubstrInName :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithSubstrInName substr p conn =
-  query conn (paginate postsWithSubstrInName p)
-    ["%" `B.append` substr `B.append` "%"]
+getPostsWithSubstrInName substr = paginatedQuery postsWithSubstrInName ["%" `B.append` substr `B.append` "%"]
+
 
 getPostsWithTag :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithTag tag p conn =
-  query conn (paginate postsWithTag p)
-    ["{" `B.append` tag `B.append` "}"]
+getPostsWithTag tag = paginatedQuery postsWithTag ["{" `B.append` tag `B.append` "}"]
+
 
 getPostsTagsIn :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsTagsIn tagsIn p conn = 
-  query conn (paginate postsTagsIn p)
-    ["{" `B.append` getArr tagsIn `B.append` "}"]
+getPostsTagsIn tagsIn = paginatedQuery postsTagsIn ["{" `B.append` getArr tagsIn `B.append` "}"]
 
 getPostsTagsAll :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsTagsAll tagsAll p conn =
-  query conn (paginate postsTagsAll p)
-    ["{" `B.append` getArr tagsAll `B.append` "}"]
+getPostsTagsAll tagsAll = paginatedQuery postsTagsAll ["{" `B.append` getArr tagsAll `B.append` "}"]
 
 getPostsByCategory :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsByCategory cat p conn =
-  query conn (paginate postsTagsAll p)
-    [cat]
+getPostsByCategory cat = paginatedQuery postsTagsAll [cat]
 
 postsByAuthor :: Query
 postsByAuthor = "SELECT * FROM posts \
@@ -189,28 +159,14 @@ getArr :: B.ByteString -> B.ByteString
 getArr = B.init . B.tail
 
 getPostsDate :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsDate date p conn =
-  query conn (paginate postsDate p)
-    [date]
+getPostsDate date = paginatedQuery postsDate [date]
 
 getPostsDateLt :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsDateLt dateLt p conn = 
-  query conn (paginate postsDateLt p)
-    [dateLt]
+getPostsDateLt dateLt = paginatedQuery postsDateLt [dateLt]
 
 getPostsDateGt :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsDateGt dateGt p conn =
-  query conn (paginate postsDateGt p)
-    [dateGt]
+getPostsDateGt dateGt = paginatedQuery postsDateGt [dateGt]
 
-{-
-paginate :: Query -> Maybe Page -> Query
-paginate q p =
-  let offset = maybe 0 ((*20) . (subtract 1)) p
-      qStr = Prelude.init $ Prelude.tail $ show q
-      in fromString $ qStr ++
-        "OFFSET " ++ show offset ++ " LIMIT 20"
--}
 postsDate :: Query
 postsDate = "SELECT * FROM posts WHERE DATE(creation_time) = DATE ?"
 

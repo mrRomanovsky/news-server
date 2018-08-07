@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE RankNTypes #-}
 
 module GetRequests (processGetRequest, processFilterGetRequest) where
 
@@ -18,15 +16,11 @@ import DbRequests
 import Data.Text hiding (head)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Aeson
-import Data.Attoparsec.Text
 import Network.Wai
 import Network.HTTP.Types (status200, status422, hAuthorization, Query)
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString as BS
-import Database.PostgreSQL.Simple.Time
 import Database.PostgreSQL.Simple hiding (Query)
-import Database.PostgreSQL.Simple.Types hiding (Query)
-import Database.PostgreSQL.Simple.FromRow
 
 processGetRequest :: Request -> Connection -> IO Response
 processGetRequest request =
@@ -64,10 +58,8 @@ processFilterGetRequest request c =
         ("content_substr", Just author) ->
           respondJson <$> (dtosToPosts c $ P.getPostsWithSubstrInContent author page c)
         ("name_substr", Just author) ->
-          respondJson <$> (dtosToPosts c $ P.getPostsWithSubstrInName author page c)
-        ("tag", Just tag) -> do
-          print "I'm here!"
-          print page
+          respondJson <$> dtosToPosts c (P.getPostsWithSubstrInName author page c)
+        ("tag", Just tag) -> 
           respondJson <$> (dtosToPosts c $ P.getPostsWithTag tag page c)
         ("tags_in", Just tagsIn) ->
           respondJson <$> (dtosToPosts c $ P.getPostsTagsIn tagsIn page c)

@@ -79,7 +79,7 @@ CREATE TABLE posts (
 INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id", "post_tags", "post_text_content", "post_main_photo", "post_additional_photos", "post_comments") VALUES
   ('Tet Post 1', TIMESTAMP '2017-07-28 10:20:15',
   (SELECT a.author_id FROM authors AS a
-    WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 1')
+    WHERE a.user_id = (SELECT u.user_id FROM users AS u WHERE u.user_name = 'Test User 1')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
   array[1, 2, 3], 'Very intresting article.', 'https://top/photo.jpg', array['https://photo2', 'https://photo2'],
   array['WOW!!', 'Great article, bro!']);
@@ -87,7 +87,7 @@ INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id"
 INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id", "post_tags", "post_text_content", "post_main_photo", "post_additional_photos") VALUES
   ('Tet Post 2', TIMESTAMP '2018-08-15 22:10:15',
   (SELECT a.author_id FROM authors AS a
-    WHERE a.users_id = (SELECT u.users_id FROM users AS u WHERE u.users_name = 'Test User 3')
+    WHERE a.user_id = (SELECT u.user_id FROM users AS u WHERE u.user_name = 'Test User 3')
   ), (SELECT c.category_id FROM categories AS c WHERE c.category_name = 'Test Category 1'),
   array[1, 2, 3], 'Awful article', 'https://top/photo2.jpg', array['https://photo2', 'https://photo2']);
 
@@ -95,7 +95,7 @@ CREATE TABLE drafts (
   "draft_id" SERIAL PRIMARY KEY,
   "post_id" INTEGER REFERENCES posts,
   "author_id" INTEGER REFERENCES authors,
-  "post_name" TEXT NOT NULL,
+  "draft_name" TEXT NOT NULL,
   "draft_creation_time" timestamp default current_timestamp,
   "draft_category_id" INTEGER REFERENCES categories,
   "draft_tags" INTEGER[],
@@ -105,14 +105,5 @@ CREATE TABLE drafts (
   "draft_comments" text[]
 );
 
-INSERT INTO drafts ("post_id", "author_id", "post_name", "draft_category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
+INSERT INTO drafts ("post_id", "author_id", "draft_name", "draft_category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
   (1, 1, 'Draft Post Name', 2, array[1, 2, 3], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);
-
-CREATE TABLE comments (
-  comment_id serial PRIMARY KEY,
-  comment_text text,
-  post_id integer --posts --it should be referencing posts!
-);
-
-INSERT INTO comments (comment_text, post_id) VALUES
-  ('WOW, TOP ARTICLE!!!', (SELECT p.post_id FROM posts AS p LIMIT 1));

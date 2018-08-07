@@ -24,6 +24,19 @@ import Database.PostgreSQL.Simple hiding (Query)
 
 processGetRequest :: Request -> Connection -> IO Response
 processGetRequest request =
+  let qString = queryString request
+      in if isSimpleGet qString
+             then processSimpleGetRequest request
+             else processFilterGetRequest request
+
+isSimpleGet :: Query -> Bool
+isSimpleGet [] = True
+isSimpleGet (("page", p) : qs) = True
+isSimpleGet (("sort_by", sB) : qs) = True
+isSimpleGet _ = False
+
+processSimpleGetRequest :: Request -> Connection -> IO Response
+processSimpleGetRequest request =
   let mPage = lookup "page" $ queryString request
       sortBy = join $ lookup "sort_by" $ queryString request
       page = mPage >>=

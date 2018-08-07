@@ -17,13 +17,9 @@ processRequest request = do
     , connectPassword = "news-server" 
   }
   let method = requestMethod request
-      qString = queryString request
   if method == methodGet
-     then if isSimpleGet qString
-             then processGetRequest request c
-             else processFilterGetRequest request c
-     else
-      processPostRequest request c
+     then processGetRequest request c
+     else processPostRequest request c
 
 isSimpleGet :: Query -> Bool
 isSimpleGet [] = True

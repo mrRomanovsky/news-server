@@ -12,12 +12,12 @@ DROP TABLE IF EXISTS drafts CASCADE;
 DROP TABLE IF EXISTS comments CASCADE;
 
 CREATE TABLE users (
-  "user_id" serial PRIMARY KEY, 
-  "user_name" varchar(50) NOT NULL,
-  "user_surname" varchar(50) NOT NULL,
-  "user_avatar" varchar(100) NOT NULL,
-  "user_creation_time" timestamp default current_timestamp,
-  "user_is_admin" boolean
+  "user_id" SERIAL PRIMARY KEY, 
+  "user_name" VARCHAR(50) NOT NULL,
+  "user_surname" VARCHAR(50) NOT NULL,
+  "user_avatar" VARCHAR(100) NOT NULL,
+  "user_creation_time" TIMESTAMP default current_timestamp,
+  "user_is_admin" BOOLEAN
 );
 
 INSERT INTO users ("user_name", "user_surname", "user_avatar", "user_creation_time", "user_is_admin") VALUES
@@ -28,8 +28,8 @@ INSERT INTO users ("user_name", "user_surname", "user_avatar", "user_creation_ti
   ('Test User 5', 'Test Surname 5', 'https://vignette.wikia.nocookie.net/googology/images/b/bd/Test.jpg/revision/latest?cb=20180119233937', TIMESTAMP '2017-07-28 12:13:12', TRUE);
 
 CREATE TABLE authors (
-  "author_id" serial PRIMARY KEY,
-  "user_id" integer references users,
+  "author_id" SERIAL PRIMARY KEY,
+  "user_id" INTEGER REFERENCES users ON DELETE CASCADE,
   "author_desc" TEXT
 );
 
@@ -38,9 +38,9 @@ INSERT INTO authors ("user_id")
     WHERE u.user_is_admin;
 
 CREATE TABLE categories (
-  "category_id" serial PRIMARY KEY,
-  "category_name" varchar(50) NOT NULL,
-  "category_nested_categories" integer[]
+  "category_id" SERIAL PRIMARY KEY,
+  "category_name" VARCHAR(50) NOT NULL,
+  "category_nested_categories" INTEGER[]
 );
 
 INSERT INTO categories ("category_name") VALUES
@@ -52,8 +52,8 @@ INSERT INTO categories ("category_name") VALUES
 
 
 CREATE TABLE tags (
-  "tag_id" serial PRIMARY KEY,
-  "tag_name" varchar(50) NOT NULL
+  "tag_id" SERIAL PRIMARY KEY,
+  "tag_name" VARCHAR(50) NOT NULL
 );
 
 INSERT INTO tags ("tag_name") VALUES
@@ -64,16 +64,16 @@ INSERT INTO tags ("tag_name") VALUES
   ('tag5');
 
 CREATE TABLE posts (
-  "post_id" serial PRIMARY KEY,
+  "post_id" SERIAL PRIMARY KEY,
   "post_name" TEXT NOT NULL,
-  "post_creation_time" timestamp default current_timestamp,
-  "author_id" integer references authors,
-  "category_id" integer references categories,
+  "post_creation_time" TIMESTAMP default current_timestamp,
+  "author_id" INTEGER REFERENCES authors ON DELETE CASCADE,
+  "category_id" INTEGER REFERENCES categories ON DELETE CASCADE,
   "post_tags" INTEGER[],
-  "post_text_content" text NOT NULL,
-  "post_main_photo" text NOT NULL,
-  "post_additional_photos" text[],
-  "post_comments" text[]
+  "post_text_content" TEXT NOT NULL,
+  "post_main_photo" TEXT NOT NULL,
+  "post_additional_photos" TEXT[],
+  "post_comments" TEXT[]
 );
 
 INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id", "post_tags", "post_text_content", "post_main_photo", "post_additional_photos", "post_comments") VALUES
@@ -93,11 +93,11 @@ INSERT INTO posts ("post_name", "post_creation_time", "author_id", "category_id"
 
 CREATE TABLE drafts (
   "draft_id" SERIAL PRIMARY KEY,
-  "post_id" INTEGER REFERENCES posts,
-  "author_id" INTEGER REFERENCES authors,
+  "post_id" INTEGER REFERENCES posts ON DELETE CASCADE,
+  "author_id" INTEGER REFERENCES authors ON DELETE CASCADE,
   "draft_name" TEXT NOT NULL,
-  "draft_creation_time" timestamp default current_timestamp,
-  "category_id" INTEGER REFERENCES categories,
+  "draft_creation_time" TIMESTAMP default current_timestamp,
+  "category_id" INTEGER REFERENCES categories ON DELETE CASCADE,
   "draft_tags" INTEGER[],
   "draft_text_content" text NOT NULL,
   "draft_main_photo" text NOT NULL,

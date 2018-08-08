@@ -76,11 +76,7 @@ instance Model User UserId where
 
   update = error "Sorry, this feature is not implemented yet"
 
-  delete uId conn = do --this should be done in one transaction!
-    execute conn "DELETE FROM drafts WHERE author_id = (SELECT author_id FROM authors WHERE \"user_id\" = ?)" [uId]
-    execute conn "DELETE FROM posts WHERE author_id = \
-                    \(SELECT author_id FROM authors WHERE \"user_id\" = ?)" [uId]
-    execute conn "DELETE FROM authors WHERE \"user_id\" = ?" [uId]
+  delete uId conn = do
     execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]
     return ()
 

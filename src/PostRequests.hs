@@ -48,7 +48,7 @@ commentDeleted = return $ responseLBS status200 [("Content-Type", "application/j
 postTag :: [Text] -> B.ByteString -> Connection -> IO Response
 postTag [] t = createModel $ decodeTag t
 postTag ["update"] t = updateModel $ decodeTag t
-postTag ["tags", "delete"] tId = deleteModel (eitherDecode tId :: Either String T.TagId)
+postTag ["delete"] tId = deleteModel (eitherDecode tId :: Either String T.TagId)
 
 postCategory :: [Text] -> B.ByteString -> Connection -> IO Response
 postCategory [] c = createModel $ decodeCategory c

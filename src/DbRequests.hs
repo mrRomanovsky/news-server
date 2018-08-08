@@ -28,7 +28,7 @@ getDraftAuthor dId conn = do
 
 getAuthorId :: B.ByteString -> Connection -> IO (Maybe Integer)
 getAuthorId uId conn = do
-  authorId <- query conn "SELECT author_id FROM authors WHERE users_id = ?"
+  authorId <- query conn "SELECT author_id FROM authors WHERE \"user_id\" = ?"
     [uId]
   case authorId of
     [[aId]] -> return $ Just aId
@@ -61,19 +61,16 @@ checkAdmin uId conn = do
 
 getRecords :: FromRow m => Text -> Maybe Integer -> Maybe B.ByteString -> Connection -> IO [m]
 getRecords table page sortParam conn = 
-  let defSort = if Data.Text.head table == 'u'
-                   then table `append` "_id"
-                   else Data.Text.init table `append` "_id"
+  let defSort = getDefaultOrder table
       sortP = Identifier $ maybe defSort decodeUtf8 sortParam
       in query conn (paginate selectOrdered page) (Identifier table, sortP)
-{-getRecords table Nothing conn =
-  query conn "SELECT * FROM ? LIMIT 20" [Identifier table]
-getRecords table (Just page) conn =
-  let offset = (page - 1) * 20
-      in query conn "SELECT * FROM ? OFFSET ? LIMIT 20" (Identifier table, offset)-}
 
 selectOrdered :: Database.PostgreSQL.Simple.Query
 selectOrdered = "SELECT * FROM ? ORDER BY ?"
+
+getDefaultOrder :: Text -> Text
+getDefaultOrder "categories" = "category_id"
+getDefaultOrder table = Data.Text.init table `append` "_id"
 
 paginate :: Database.PostgreSQL.Simple.Query -> Maybe Page -> Database.PostgreSQL.Simple.Query
 paginate q p =

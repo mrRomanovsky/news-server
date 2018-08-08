@@ -13,7 +13,7 @@ import qualified Category as C
 import Model
 import Control.Monad (join)
 import DbRequests
-import Data.Text hiding (head)
+import Data.Text hiding (head, filter)
 import Data.Text.Encoding (decodeUtf8)
 import Data.Aeson
 import Network.Wai
@@ -42,7 +42,9 @@ processSimpleGetRequest request =
       page = mPage >>=
         maybe Nothing (decode . B.fromStrict:: BS.ByteString -> Maybe Integer)
       in case pathInfo request of
-  ["drafts"]     -> fmap respondJson . (read page sortBy :: Connection -> IO [D.Draft])
+  ["drafts"]     -> 
+    let auth = lookup hAuthorization $ requestHeaders request
+        in  fmap respondJson . getDraftsAuth auth (read page sortBy)
   ["tags"]       -> fmap respondJson . (read page sortBy :: Connection -> IO [T.Tag])
   ["categories"] -> fmap respondJson . (read page sortBy :: Connection -> IO [C.Category])
   ["users"]      -> fmap respondJson . (read page sortBy :: Connection -> IO [U.User])
@@ -52,6 +54,44 @@ processSimpleGetRequest request =
   ["posts"]      -> fmap respondJson .
    (\c -> dtosToPosts c $ read page sortBy c)
   ["posts", n, "comments"] -> fmap respondJson . P.getPostComments n page
+
+getDraftsAuth :: Maybe AuthData -> (Connection -> IO [D.Draft]) -> Connection -> IO [D.Draft]
+getDraftsAuth Nothing _ _ = return []
+getDraftsAuth (Just auth) getDrafts conn = do
+  authorId <- getAuthorId auth conn
+  drafts <- getDrafts conn
+  return $ maybe [] (`draftsForAuthor` drafts) authorId
+
+draftsForAuthor :: Integer -> [D.Draft] -> [D.Draft]
+draftsForAuthor aId = filter ((==aId). D.authorId)
+
+{-
+postDraft :: [Text] -> B.ByteString -> Maybe AuthData -> Connection -> IO Response
+postDraft path d auth c = do
+  aId <- maybe (return Nothing) (`getAuthorId` c) auth 
+  maybe (return notFound) (\a -> postDraftUser path d a c) aId
+
+postDraftUser :: [Text] -> B.ByteString -> Integer -> Connection -> IO Response
+postDraftUser [] d aId = createModel $ draftWithAuthor d aId
+postDraftUser ["update"] d aId = updateModel $ draftWithAuthor d aId
+postDraftUser ["delete"] dId aId = draftIdAction dId aId deleteModel
+postDraftUser ["publish"] dId aId = draftIdAction dId aId publishDraftRequest
+
+draftWithAuthor :: B.ByteString -> Integer -> Either String D.Draft
+draftWithAuthor d aId = setDraftAuthor aId <$> decodeDraft d
+
+draftIdAction :: B.ByteString -> Integer -> DraftIdAction -> Connection -> IO Response
+draftIdAction dId aId action c = do
+  let draftId = eitherDecode dId :: Either String D.DraftId
+  either (const $ return notFound) (\(D.DraftId drId) -> do
+    draftAuthor <- getDraftAuthor drId c
+    if draftAuthor == aId
+      then action draftId c
+      else return notFound) draftId
+
+setDraftAuthor :: Integer -> D.Draft -> D.Draft
+setDraftAuthor aId d = d{D.authorId = aId}
+-}
 
 dtosToPosts :: Connection -> IO [P.PostDTO] -> IO [PS.Post]
 dtosToPosts c dtosIO = do

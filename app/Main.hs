@@ -13,17 +13,17 @@ import Network.Wai.Handler.Warp (run)
 --type Application = Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 application :: Application
 application request respond = do
-  writeFile "news-server.log" "Request : "
-  writeFile "news-server.log" $ show request
+  appendFile "news-server.log" "\nRequest : "
+  appendFile "news-server.log" $ '\n' : show request
   response <- catch (processRequest request) handleRequestException
   rResult <- respond response
-  writeFile "news-server.log" $
-    "Responded with status : " ++ (show $ responseStatus response)
+  appendFile "news-server.log" $
+    "\nResponded with status : " ++ show (responseStatus response)
   return rResult
 
 handleRequestException :: SomeException -> IO Response
 handleRequestException e = do
-  writeFile "news-server.log" $ "Exception occured during request processing: " ++ show e
+  appendFile "news-server.log" $ "\nException occured during request processing: " ++ show e
   return commentUpdated
 
 commentUpdated :: Response

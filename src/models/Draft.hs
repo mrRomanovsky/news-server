@@ -81,6 +81,12 @@ instance FromRow Draft where
     <*> field <*> field <*> field <*> field
     <*> field <*> field <*> field <*> field
 
+getUserDrafts :: Integer -> Connection -> IO [Draft]
+getUserDrafts uId conn = 
+  query conn "SELECT * FROM drafts \
+    \WHERE author_id = (SELECT author_id FROM authors \
+      \WHERE user_id = ?" [uId]
+
 publishDraft :: DraftId -> Connection -> IO ()
 publishDraft (DraftId did) conn = do
   execute conn

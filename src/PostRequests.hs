@@ -137,7 +137,7 @@ modelError = responseLBS status422 [("Content-Type", "application/json")]
 
 processBadModel :: String -> IO Response
 processBadModel e = do
-  writeFile "news-server.log" $ "error processing request body: " ++ e
+  appendFile "news-server.log" $ "\nerror processing request body: " ++ e
   return errorResponse
 
 errorResponse :: Response

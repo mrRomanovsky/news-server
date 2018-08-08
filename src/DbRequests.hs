@@ -53,7 +53,7 @@ authorizeAdmin auth conn =
 
 checkAdmin :: B.ByteString -> Connection -> IO Bool
 checkAdmin uId conn = do
-  adminUser <- query conn "SELECT is_admin FROM users WHERE users_id = ?"
+  adminUser <- query conn "SELECT user_is_admin FROM users WHERE \"user_id\" = ?"
     [uId]
   case adminUser  of
     [[True]] -> return True

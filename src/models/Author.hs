@@ -44,14 +44,14 @@ instance ToJSON Author
 
 instance Model Author AuthorId where
   create Author{Author.userId = uId, Author.desc = aDesc} conn = do
-    execute conn "INSERT INTO authors(users_id, author_desc) values (?,?)"
+    execute conn "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
       (uId, aDesc)
     return ()
 
   read = getRecords "authors"  
 
   update Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} conn = do
-    execute conn "UPDATE authors SET users_id=?, author_desc=? WHERE author_id=?"
+    execute conn "UPDATE authors SET \"user_id\"=?, author_desc=? WHERE author_id=?"
       (uId, aDesc, aId)
     return ()
     

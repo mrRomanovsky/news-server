@@ -64,6 +64,12 @@ There is no way of creating or updating posts directly - it should be done via d
 
 Pagination and records sorting are available for all entities. Listing them all would be tedious, so the common pattern is: "get-request"/?"some of your parameters (or none at all)"&page="page to get"&sort_by="parameter to sort by"(name of the field in the database)
 
+Posts allow filtering by author name, substring in content etc. See /sh-requests/get-requests/getPosts* for examples.
+
+### About Authorization:
+
+Database stores no passwords now, so authorization is performed simply by checking if the user with id sent in the authorization header is admin etc. See examples in /sh-requests/post-requests
+
 ## Building app
 
 Create postgresql used called "news-server".

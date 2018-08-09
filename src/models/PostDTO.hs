@@ -2,39 +2,48 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module PostDTO where
 
-import Control.Applicative
-import Prelude hiding (takeWhile)
 import Author
-import User
 import Category
-import Tag
-import Model
+import Control.Applicative
 import Control.Monad
-import DbRequests
 import Data.Aeson
-import GHC.Generics
+import qualified Data.ByteString as B
 import Data.String (fromString)
 import Data.Text hiding (takeWhile)
 import Data.Text.Encoding (decodeUtf8)
-import Database.PostgreSQL.Simple.FromRow
-import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.Types 
-import Database.PostgreSQL.Simple.ToField
-import Database.PostgreSQL.Simple.FromField
-import qualified Data.ByteString as B
 import Data.Vector hiding ((++))
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromField
+import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
+import Database.PostgreSQL.Simple.ToField
+import Database.PostgreSQL.Simple.Types
+import DbRequests
+import GHC.Generics
+import Model
+import Prelude hiding (takeWhile)
+import Tag
+import User
 
-data PostDTO = PostDTO { postId :: PostId, postName :: Text, creation_date :: T.LocalTimestamp
-                 , authorId :: Integer, categoryId :: Integer, tags :: Maybe (Vector Integer)
-                 , text :: Text, mainPhoto :: Text
-                 , additionalPhotos :: Maybe (Vector Text)
-                 , comments :: Maybe (Vector Text)} deriving (Show, Generic)
+data PostDTO = PostDTO
+  { postId :: PostId
+  , postName :: Text
+  , creation_date :: T.LocalTimestamp
+  , authorId :: Integer
+  , categoryId :: Integer
+  , tags :: Maybe (Vector Integer)
+  , text :: Text
+  , mainPhoto :: Text
+  , additionalPhotos :: Maybe (Vector Text)
+  , comments :: Maybe (Vector Text)
+  } deriving (Show, Generic)
 
-  
-newtype PostId = PostId {pId :: Integer}
+newtype PostId = PostId
+  { pId :: Integer
+  }
 
 instance Show PostId where
   show = show . pId
@@ -52,33 +61,37 @@ instance ToField PostId where
 
 instance Model PostDTO PostId where
   create = error "Sorry, this feature is not implemented yet"
-
   read = getRecords "posts"
-
   update = error "Sorry, this feature is not implemented yet"
-
   delete = error "Sorry, this feature is not implemented yet"
 
 instance ToJSON PostDTO
 
 instance FromRow PostDTO where
-  fromRow = PostDTO <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow =
+    PostDTO <$> field <*> field <*> field <*> field <*> field <*> field <*>
+    field <*>
+    field <*>
+    field <*>
+    field
 
 insertComment :: Text -> B.ByteString -> Connection -> IO ()
 insertComment pNumber comment conn =
   void $ execute conn insertCommentQuery (comment, pNumber)
 
 insertCommentQuery :: Query
-insertCommentQuery = "UPDATE posts \
+insertCommentQuery =
+  "UPDATE posts \
 \SET post_comments[array_length(post_comments, 1) + 1] = ? \
 \WHERE post_id = ?"
 
 deleteComment :: Text -> B.ByteString -> Connection -> IO ()
-deleteComment pNumber cNumber conn = 
+deleteComment pNumber cNumber conn =
   void $ execute conn deleteCommentQuery (cNumber, pNumber)
 
 deleteCommentQuery :: Query
-deleteCommentQuery = "UPDATE posts \
+deleteCommentQuery =
+  "UPDATE posts \
 \SET post_comments = array_remove(post_comments, post_comments[?]) \
 \WHERE post_id = ?"
 
@@ -89,13 +102,13 @@ postComments :: Query
 postComments = "SELECT post_comments FROM posts WHERE post_id = ?"
 
 getPostsBySubstr :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsBySubstr substr = 
-  let
-    substrRegex = "%" `B.append` substr `B.append` "%"
-    in paginatedQuery postsWithSubstr (substrRegex, substrRegex, substrRegex)
+getPostsBySubstr substr =
+  let substrRegex = "%" `B.append` substr `B.append` "%"
+   in paginatedQuery postsWithSubstr (substrRegex, substrRegex, substrRegex)
 
 postsWithSubstr :: Query
-postsWithSubstr = "SELECT posts.* FROM (posts JOIN authors \
+postsWithSubstr =
+  "SELECT posts.* FROM (posts JOIN authors \
   \ON posts.author_id = authors.author_id \
   \JOIN users ON authors.user_id = users.user_id) \
   \WHERE (posts.post_text_content LIKE ?) OR (posts.post_name LIKE ?) \
@@ -110,29 +123,34 @@ postsSorted = "SELECT * FROM posts ORDER BY ? "
 getPostsByAuthor :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsByAuthor author = paginatedQuery postsByAuthor [author]
 
-getPostsWithSubstrInContent :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithSubstrInContent substr = paginatedQuery postsWithSubstrInContent ["%" `B.append` substr `B.append` "%"]
+getPostsWithSubstrInContent ::
+     B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
+getPostsWithSubstrInContent substr =
+  paginatedQuery postsWithSubstrInContent ["%" `B.append` substr `B.append` "%"]
 
-
-getPostsWithSubstrInName :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithSubstrInName substr = paginatedQuery postsWithSubstrInName ["%" `B.append` substr `B.append` "%"]
-
+getPostsWithSubstrInName ::
+     B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
+getPostsWithSubstrInName substr =
+  paginatedQuery postsWithSubstrInName ["%" `B.append` substr `B.append` "%"]
 
 getPostsWithTag :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsWithTag tag = paginatedQuery postsWithTag ["{" `B.append` tag `B.append` "}"]
-
+getPostsWithTag tag =
+  paginatedQuery postsWithTag ["{" `B.append` tag `B.append` "}"]
 
 getPostsTagsIn :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsTagsIn tagsIn = paginatedQuery postsTagsIn ["{" `B.append` getArr tagsIn `B.append` "}"]
+getPostsTagsIn tagsIn =
+  paginatedQuery postsTagsIn ["{" `B.append` getArr tagsIn `B.append` "}"]
 
 getPostsTagsAll :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsTagsAll tagsAll = paginatedQuery postsTagsAll ["{" `B.append` getArr tagsAll `B.append` "}"]
+getPostsTagsAll tagsAll =
+  paginatedQuery postsTagsAll ["{" `B.append` getArr tagsAll `B.append` "}"]
 
 getPostsByCategory :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
 getPostsByCategory cat = paginatedQuery postsTagsAll [cat]
 
 postsByAuthor :: Query
-postsByAuthor = "SELECT * FROM posts \
+postsByAuthor =
+  "SELECT * FROM posts \
 \WHERE author_id = (SELECT author_id FROM authors \
   \WHERE \"user_id\" = (SELECT \"user_id\" FROM users \
     \WHERE user_name = ?))"

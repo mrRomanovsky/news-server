@@ -1,24 +1,31 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+
 module Author where
 
-import User
-import Model
-import Data.Aeson
 import Control.Applicative
 import Control.Monad
-import GHC.Generics
-import DbRequests
+import Data.Aeson
 import Data.Text
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.ToField
+import DbRequests
+import GHC.Generics
+import Model
+import User
 
-data Author = Author {authorId :: AuthorId, userId :: Integer, desc :: Maybe Text} deriving (Show, Generic)
+data Author = Author
+  { authorId :: AuthorId
+  , userId :: Integer
+  , desc :: Maybe Text
+  } deriving (Show, Generic)
 
-newtype AuthorId = AuthorId {aId :: Integer}
+newtype AuthorId = AuthorId
+  { aId :: Integer
+  }
 
 instance Show AuthorId where
   show = show . aId
@@ -38,21 +45,30 @@ instance ToField AuthorId where
   toField = toField . aId
 
 instance FromJSON Author where
-  parseJSON (Object v) = Author <$> (v .: "authorId" <|> pure (AuthorId (-1))) <*> v .: "userId" <*> v .:? "desc"
+  parseJSON (Object v) =
+    Author <$> (v .: "authorId" <|> pure (AuthorId (-1))) <*> v .: "userId" <*>
+    v .:? "desc"
   parseJSON _ = mzero
+
 instance ToJSON Author
 
 instance Model Author AuthorId where
-  create Author{Author.userId = uId, Author.desc = aDesc} conn =
-    void $ execute conn "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
+  create Author {Author.userId = uId, Author.desc = aDesc} conn =
+    void $
+    execute
+      conn
+      "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
       (uId, aDesc)
-
-  read = getRecords "authors"  
-
-  update Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} conn =
-    void $ execute conn "UPDATE authors SET \"user_id\"=?, author_desc=? WHERE author_id=?"
+  read = getRecords "authors"
+  update Author { Author.authorId = aId
+                , Author.userId = uId
+                , Author.desc = aDesc
+                } conn =
+    void $
+    execute
+      conn
+      "UPDATE authors SET \"user_id\"=?, author_desc=? WHERE author_id=?"
       (uId, aDesc, aId)
-    
   delete aId conn =
     void $ execute conn "DELETE FROM authors WHERE author_id=?" [aId]
 

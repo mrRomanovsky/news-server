@@ -6,33 +6,37 @@
 
 module User where
 
-import Model
-import Data.Aeson
-import GHC.Generics
-import Data.Text hiding (head)
-import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromField
-import Database.PostgreSQL.Simple.ToField
-import Database.PostgreSQL.Simple.Types
-import Database.PostgreSQL.Simple.FromRow
-import qualified Database.PostgreSQL.Simple.Time as T
-import Data.Binary.Builder (toLazyByteString)
-import Control.Monad
 import Control.Applicative
-import DbRequests
+import Control.Monad
+import Data.Aeson
+import Data.Binary.Builder (toLazyByteString)
 import qualified Data.ByteString.Lazy as B
-import Data.Text.Lazy.Encoding (decodeUtf8)
+import Data.Text hiding (head)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.Lazy (toStrict)
+import Data.Text.Lazy.Encoding (decodeUtf8)
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromField
+import Database.PostgreSQL.Simple.FromRow
+import qualified Database.PostgreSQL.Simple.Time as T
+import Database.PostgreSQL.Simple.ToField
+import Database.PostgreSQL.Simple.Types
+import DbRequests
+import GHC.Generics
+import Model
 
-data User = User {userId :: UserId,
-                  name :: Text,
-                  surname :: Text,
-                  avatar :: Text,
-                  creationTime :: T.LocalTimestamp,
-                  isAdmin :: Bool} deriving (Show, Generic)
+data User = User
+  { userId :: UserId
+  , name :: Text
+  , surname :: Text
+  , avatar :: Text
+  , creationTime :: T.LocalTimestamp
+  , isAdmin :: Bool
+  } deriving (Show, Generic)
 
-newtype UserId = UserId {uId :: Integer}
+newtype UserId = UserId
+  { uId :: Integer
+  }
 
 instance Show UserId where
   show = show . uId
@@ -55,26 +59,31 @@ getLocTimestamp = either undefined id . T.parseLocalTimestamp
 
 instance FromJSON T.LocalTimestamp where
   parseJSON (String t) = return $ getLocTimestamp $ encodeUtf8 t
-  parseJSON _          = mzero
+  parseJSON _ = mzero
 
 instance ToJSON T.LocalTimestamp where
-  toJSON = String . toStrict . decodeUtf8 . toLazyByteString . T.localTimestampToBuilder
+  toJSON =
+    String .
+    toStrict . decodeUtf8 . toLazyByteString . T.localTimestampToBuilder
 
 instance FromJSON User where
-  parseJSON (Object v) = User (UserId (-1)) <$> v .: "name" <*> v .: "surname"
-    <*> v .: "avatar" <*> (pure $ getLocTimestamp "2017-07-28 14:14:14") <*> pure False --replace default data with maybe
+  parseJSON (Object v) =
+    User (UserId (-1)) <$> v .: "name" <*> v .: "surname" <*> v .: "avatar" <*>
+    (pure $ getLocTimestamp "2017-07-28 14:14:14") <*>
+    pure False --replace default data with maybe
   parseJSON _ = mzero
+
 instance ToJSON User
 
 instance Model User UserId where
-  create User{User.name = n, User.surname = s, User.avatar = a} conn =
-    void $ execute conn "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
+  create User {User.name = n, User.surname = s, User.avatar = a} conn =
+    void $
+    execute
+      conn
+      "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
       (n, s, a)
-
   read = getRecords ("users" :: Text)
-
   update = error "Sorry, this feature is not implemented yet"
-
   delete uId conn =
     void $ execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]
 

@@ -27,7 +27,7 @@ data Draft = Draft
   , postId :: Maybe Integer
   , authorId :: Integer
   , postName :: Text
-  , creationTime :: T.LocalTimestamp
+  , creationTime :: Maybe T.LocalTimestamp
   , categoryId :: Integer
   , tags :: Maybe (Vector Integer)
   , textContent :: Text

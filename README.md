@@ -60,14 +60,21 @@ All posts requests should contain request bodies with necessary information. See
 
 There is no way of creating or updating posts directly - it should be done via drafts.
 
+## Please Note:
+
+Pagination and records sorting are available for all entities. Listing them all would be tedious, so the common pattern is: "get-request"/?"some of your parameters (or none at all)"&page="page to get"&sort_by="parameter to sort by"(name of the field in the database)
 
 ## Building app
 
-Go to app folder after downloading or cloning from git. Run command "stack build"
+Create postgresql used called "news-server".
 
-## Preparing the app
+Go to app folder after downloading or cloning from git.
 
-Before launching the app you should set the configuration of slack and telegram bots:
+Run command "sudo -u news-server psql -U news-server -h localhost -W -a -f db_schema.sql "
+
+Enter your password
+
+Run command "stack build"
 
 ## Launching the app
 
@@ -75,9 +82,25 @@ After building the app and setting environment variables you can launci it with 
 
 ## App structure
 
+/app/Main.hs - main function, launching web-server
+
+/src/
+
+  DbRequests.hs - some common requests to the database used in other modules;
+
+  GetRequests.hs - processing GET-requests
+
+  PostRequests.hs - processing POST-requests
+
+  Model.hs - typeclass for entities in the database
+
+  Requests.hs - processing GET and POSTS requests (using GetRequests.hs and PostRequests.hs) 
+
+/src/models/Author.hs, Category.hs, ... etc. - instances of Model typeclass for database entities
+
 ## Testing
 
-Not implemented yet.
+sh-scripts in sh-requests folder
 
 
 ## Logging

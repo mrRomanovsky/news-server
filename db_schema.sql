@@ -108,14 +108,6 @@ CREATE TABLE drafts (
 INSERT INTO drafts ("post_id", "author_id", "draft_name", "category_id", "draft_tags", "draft_text_content", "draft_main_photo", "draft_additional_photos") VALUES
   (1, 1, 'Draft Post Name', 2, array[1, 2, 3], 'Draft for article', 'https://draft/photo.jpg', array['https://draft_photo2', 'https://draft_photo3']);
 
---UPDATE b
---SET column1 = a.column1,
---  column2 = a.column2,
---  column3 = a.column3
---FROM a
---WHERE a.id = b.id
---AND b.id = 1
-
 CREATE OR REPLACE FUNCTION publish_draft(draftId INTEGER) RETURNS VOID AS $$ 
     DECLARE 
     BEGIN 

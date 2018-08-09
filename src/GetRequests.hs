@@ -93,7 +93,8 @@ processFilterGetRequest request c =
         mPage >>=
         maybe Nothing (decode . B.fromStrict :: BS.ByteString -> Maybe Integer)
    in case head queryStr of
-        ("author_name", Just author) ->
+        ("author_name", Just author) -> do
+          print author
           respondJson <$> dtosToPosts c (P.getPostsByAuthor author page c)
         ("content_substr", Just author) ->
           respondJson <$>

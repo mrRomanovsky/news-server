@@ -146,13 +146,13 @@ getPostsTagsAll tagsAll =
   paginatedQuery postsTagsAll ["{" `B.append` getArr tagsAll `B.append` "}"]
 
 getPostsByCategory :: B.ByteString -> Maybe Page -> Connection -> IO [PostDTO]
-getPostsByCategory cat = paginatedQuery postsTagsAll [cat]
+getPostsByCategory cat = paginatedQuery postsByCategory [cat]
 
 postsByAuthor :: Query
 postsByAuthor =
   "SELECT * FROM posts \
 \WHERE author_id = (SELECT author_id FROM authors \
-  \WHERE \"user_id\" = (SELECT \"user_id\" FROM users \
+  \WHERE user_id = (SELECT user_id FROM users \
     \WHERE user_name = ?))"
 
 postsByCategory :: Query

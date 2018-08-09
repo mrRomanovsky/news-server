@@ -111,7 +111,7 @@ instance FromJSON Draft where
     Draft <$> (v .: "draftId" <|> pure (DraftId (-1))) <*> v .:? "postId" <*>
     pure (-1) <*>
     v .: "postName" <*>
-    (v .: "creationTime" <|> pure (U.getLocTimestamp "2017-07-28 14:14:14")) <*>
+    v .:? "creationTime" <*>
     v .: "categoryId" <*>
     v .:? "tags" <*>
     v .: "textContent" <*>

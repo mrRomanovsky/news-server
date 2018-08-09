@@ -67,18 +67,16 @@ instance FromJSON User where
 instance ToJSON User
 
 instance Model User UserId where
-  create User{User.name = n, User.surname = s, User.avatar = a} conn = do
-    execute conn "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
+  create User{User.name = n, User.surname = s, User.avatar = a} conn =
+    void $ execute conn "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
       (n, s, a)
-    return () --maybe I should do something with execute to remove this "return"
 
   read = getRecords ("users" :: Text)
 
   update = error "Sorry, this feature is not implemented yet"
 
-  delete uId conn = do
-    execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]
-    return ()
+  delete uId conn =
+    void $ execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]
 
 instance FromRow User where
   fromRow = User <$> field <*> field <*> field <*> field <*> field <*> field

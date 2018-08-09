@@ -50,17 +50,14 @@ instance FromRow Tag where
   fromRow = Tag <$> field <*> field
 
 instance Model Tag TagId where
-  create Tag{Tag.tagName = n} conn = do
-    execute conn "INSERT INTO tags(tag_name) values (?)"
+  create Tag{Tag.tagName = n} conn =
+    void $ execute conn "INSERT INTO tags(tag_name) values (?)"
              [n]
-    return ()
 
   read = getRecords "tags"
 
-  update Tag{Tag.tagId = tId, Tag.tagName = tName} conn = do
-    execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?" (tName, tId)
-    return () --maybe I should do something with execute to remove this "return"
+  update Tag{Tag.tagId = tId, Tag.tagName = tName} conn =
+    void $ execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?" (tName, tId)
 
-  delete tId conn = do
-    execute conn "DELETE FROM tags WHERE tag_id=?" [tId]
-    return ()
+  delete tId conn =
+    void $ execute conn "DELETE FROM tags WHERE tag_id=?" [tId]

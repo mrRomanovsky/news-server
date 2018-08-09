@@ -9,6 +9,7 @@ import Data.Aeson
 import DbRequests
 import Control.Applicative
 import Control.Monad
+import Control.Exception
 import GHC.Generics
 import Data.Text
 import Data.Vector
@@ -47,20 +48,24 @@ instance Model Draft DraftId where
   create Draft{ Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
                  , Draft.creationTime = dTime, Draft.categoryId = cId
                  , Draft.tags = dTags, Draft.textContent = dText
-                 , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn = do
-    execute conn "INSERT INTO drafts(post_id, author_id, draft_name, category_id, draft_tags, draft_text_content, draft_main_photo, draft_additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
-      (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
-    return () 
+                 , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn =
+    if pId == (-1) --inserting draft without existing post 
+      then void $ execute conn "INSERT INTO drafts(author_id, draft_name, category_id, draft_tags, draft_text_content, draft_main_photo, draft_additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
+        (aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
+      else void $ execute conn "INSERT INTO drafts(post_id, author_id, draft_name, category_id, draft_tags, draft_text_content, draft_main_photo, draft_additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
+      (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos) 
 
   read = getRecords "drafts"
 
   update Draft{ draftId = dId, Draft.postId = pId, Draft.authorId = aId, Draft.postName = dName
               , Draft.creationTime = dTime, Draft.categoryId = cId
               , Draft.tags = dTags, Draft.textContent = dText
-              , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn = do
-    execute conn "UPDATE drafts SET post_id=?, author_id=?, draft_name=?, category_id=?, draft_tags=?, draft_text_content=?, draft_main_photo=?, draft_additional_photos=? WHERE draft_id=?"
-       (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos, dId)
-    return ()
+              , Draft.mainPhoto = dPhoto, Draft.additionalPhotos = dAddPhotos} conn =
+    if pId == (-1)
+       then void $ execute conn "UPDATE drafts SET author_id=?, draft_name=?, category_id=?, draft_tags=?, draft_text_content=?, draft_main_photo=?, draft_additional_photos=? WHERE draft_id=?"
+         (aId, dName, cId, dTags, dText, dPhoto, dAddPhotos, dId)
+       else void $ execute conn "UPDATE drafts SET post_id=?, author_id=?, draft_name=?, category_id=?, draft_tags=?, draft_text_content=?, draft_main_photo=?, draft_additional_photos=? WHERE draft_id=?"
+         (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos, dId)
 
   delete dId conn = do
     execute conn "DELETE FROM drafts WHERE draft_id=?" [dId]
@@ -88,16 +93,9 @@ getUserDrafts uId conn =
       \WHERE user_id = ?" [uId]
 
 publishDraft :: DraftId -> Connection -> IO ()
-publishDraft (DraftId did) conn = do
-  execute conn
-   "UPDATE posts SET (post_creation_time,\
-                     \post_name,\
-                     \category_id,\
-                     \post_tags,\
-                     \post_text_content,\
-                     \post_main_photo,\
-                     \post_additional_photos) =\
-                 \(SELECT draft_creation_time, draft_name, category_id, draft_tags, draft_text_content, draft_main_photo, draft_additional_photos\
-                 \   FROM drafts WHERE draft_id=?)\
-                 \WHERE post_id = (SELECT post_id FROM drafts WHERE draft_id=?)" (did, did)
-  return () --OPTIMIZE THIS FUNCTION! NOT EFFICIENT! TWO SAME SELECTS!
+publishDraft (DraftId dId) conn =
+  catch (void $ execute conn "SELECT publish_draft(?)" [dId])
+    handleFuncCall
+
+handleFuncCall :: QueryError -> IO () --I just couldn't normally call function with "execute"
+handleFuncCall _ = return ()

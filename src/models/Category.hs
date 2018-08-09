@@ -38,21 +38,18 @@ instance ToField CategoryId where
   toField = toField . cId
 
 instance Model Category CategoryId where
-  create Category{Category.name = n, Category.nestedCategories = pId} conn = do
-    execute conn "INSERT INTO categories(category_name, category_nested_categories) values (?,?)"
+  create Category{Category.name = n, Category.nestedCategories = pId} conn =
+    void $ execute conn "INSERT INTO categories(category_name, category_nested_categories) values (?,?)"
       (n, pId)
-    return ()
 
   read = getRecords "categories"
 
-  update Category{Category.categoryId = cId, Category.name = n, Category.nestedCategories = pId} conn = do
-    execute conn "UPDATE categories SET category_name=?, category_nested_categories=? WHERE category_id=?"
+  update Category{Category.categoryId = cId, Category.name = n, Category.nestedCategories = pId} conn =
+    void $ execute conn "UPDATE categories SET category_name=?, category_nested_categories=? WHERE category_id=?"
              (n, pId, cId)
-    return ()
     
-  delete cId conn = do
-    execute conn "DELETE FROM categories WHERE category_id=?" [cId]
-    return ()
+  delete cId conn =
+    void $ execute conn "DELETE FROM categories WHERE category_id=?" [cId]
 
 instance FromJSON Category where
   parseJSON (Object v) = Category <$> (v .: "categoryId" <|> pure (CategoryId (-1))) <*> v .: "name" <*> v .:? "parentId"

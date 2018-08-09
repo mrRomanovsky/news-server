@@ -43,21 +43,18 @@ instance FromJSON Author where
 instance ToJSON Author
 
 instance Model Author AuthorId where
-  create Author{Author.userId = uId, Author.desc = aDesc} conn = do
-    execute conn "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
+  create Author{Author.userId = uId, Author.desc = aDesc} conn =
+    void $ execute conn "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
       (uId, aDesc)
-    return ()
 
   read = getRecords "authors"  
 
-  update Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} conn = do
-    execute conn "UPDATE authors SET \"user_id\"=?, author_desc=? WHERE author_id=?"
+  update Author{Author.authorId = aId, Author.userId = uId, Author.desc = aDesc} conn =
+    void $ execute conn "UPDATE authors SET \"user_id\"=?, author_desc=? WHERE author_id=?"
       (uId, aDesc, aId)
-    return ()
     
-  delete aId conn = do
-    execute conn "DELETE FROM authors WHERE author_id=?" [aId]
-    return ()
+  delete aId conn =
+    void $ execute conn "DELETE FROM authors WHERE author_id=?" [aId]
 
 instance FromRow Author where
   fromRow = Author <$> field <*> field <*> field

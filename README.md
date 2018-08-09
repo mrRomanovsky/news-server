@@ -22,6 +22,7 @@ Draft: post (to which draft is related), name,  creation time, category, tags, t
 
 /users - get all users
 /posts - get all posts
+/posts/<post_id>/comments - get comments for post
 /tags - get all tags
 /authors - get all authors (for admins only)
 /drafts - get all drafts (each user can only get their drafts)
@@ -57,6 +58,8 @@ All posts requests should contain request bodies with necessary information. See
 
 /drafts/publish - publish draft as a post (replace current post or create new post)
 
+/posts/<post_id>/comments - create new comment
+/posts/<post_id>/comments/delete - delete comment
 
 There is no way of creating or updating posts directly - it should be done via drafts.
 

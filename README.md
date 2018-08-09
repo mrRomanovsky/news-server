@@ -28,7 +28,7 @@ Draft: post (to which draft is related), name,  creation time, category, tags, t
 
 ### POST-requests:
 
-All posts requests should contain request bodies with necessary information. See examples of request bodies in requests-examples.txt
+All posts requests should contain request bodies with necessary information. See examples of request bodies in sh-requests.
 
 /users - create new user
 
@@ -79,6 +79,8 @@ Go to app folder after downloading or cloning from git.
 Run command "sudo -u news-server psql -U news-server -h localhost -W -a -f db_schema.sql "
 
 Enter your password
+
+Set environment variable "NEWS_DB_PASSW" to the password for news-server user.
 
 Run command "stack build"
 

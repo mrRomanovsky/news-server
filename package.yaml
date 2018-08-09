@@ -35,6 +35,7 @@ library:
   source-dirs:
     - src
     - src/models
+    - src/models_requests
 
 executables:
   news-server-exe:

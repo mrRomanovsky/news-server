@@ -24,7 +24,7 @@ import Network.Wai
 import Prelude hiding (read)
 
 actionWithBody :: Request -> (B.ByteString -> Connection -> IO Response) -> Connection -> IO Response
-actionWithBody request act c= 
+actionWithBody request act c = 
   strictRequestBody request >>= (`act` c)
 
 authorizeRequest :: Request -> (Connection -> IO Response) -> Connection -> IO Response

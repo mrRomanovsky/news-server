@@ -109,6 +109,7 @@ After building the app and setting environment variables you can launci it with 
 
 /src/models_requests/AuthorRequests.hs, CategoryRequests.hs, .. - request handlers for models
 
+/src/models_requests/RequestsUtils.hs - helper-functions for request handlers
 
 ### Routing
 

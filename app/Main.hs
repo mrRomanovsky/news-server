@@ -3,15 +3,15 @@
 module Main where
 
 import Control.Exception
+import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Simple hiding (Query)
 import Network.HTTP.Types (status500)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
 import Routing
 import System.Environment
-import Data.Maybe (fromMaybe)
 
-main = run 3000 application 
+main = run 3000 application
 
 application :: Application
 application request respond = do

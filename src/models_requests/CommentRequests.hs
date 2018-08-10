@@ -1,24 +1,28 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CommentRequests (getComments, createComment, CommentRequests.deleteComment) where
+module CommentRequests
+  ( getComments
+  , createComment
+  , CommentRequests.deleteComment
+  ) where
 
-import PostDTO as P
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
-import Database.PostgreSQL.Simple
 import Data.Text
-import Model
-import Network.Wai
-import Prelude hiding (read)
+import Database.PostgreSQL.Simple
 import DbRequests
-import RequestsUtils
+import Model
 import Network.HTTP.Types (hAuthorization, status200)
+import Network.Wai
+import PostDTO as P
+import Prelude hiding (read)
+import RequestsUtils
 
 getComments :: Request -> Connection -> IO Response
-getComments request = 
+getComments request =
   let postNumber = getPostNumber request
       (page, _, _) = getAdditionalParams request
-      in fmap respondJson . P.getPostComments postNumber page
+   in fmap respondJson . P.getPostComments postNumber page
 
 createComment :: Request -> Connection -> IO Response
 createComment request c = do
@@ -26,7 +30,7 @@ createComment request c = do
   comment <- strictRequestBody request
   P.insertComment postNumber comment c
   commentUpdated
-      
+
 deleteComment :: Request -> Connection -> IO Response
 deleteComment request c = do
   let postNumber = getPostNumber request
@@ -51,7 +55,7 @@ commentDeleted =
     "Comment was successfully deleted"
 
 getPostNumber :: Request -> Text
-getPostNumber request = 
+getPostNumber request =
   case pathInfo request of
-    (x : postNumber : xs) -> postNumber
+    (x:postNumber:xs) -> postNumber
     _ -> error "comments request should contain post number!"

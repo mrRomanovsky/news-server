@@ -1,22 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Routing (routers) where
+module Routing
+  ( routers
+  ) where
 
-import CommentRequests
 import AuthorRequests
 import CategoryRequests
-import DraftRequests
-import PostRequests
-import TagRequests
-import UserRequests
+import CommentRequests
 import Data.Text
+import DraftRequests
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
+import PostRequests
 import Router
+import TagRequests
+import UserRequests
 
 routers :: Router
-routers = 
+routers =
   addPostRouter isCommentsDelete deleteComment $
   addPostRouter isCommentsRequest createComment $
   addGetRouter isCommentsRequest getComments $
@@ -47,14 +49,12 @@ postPath :: [Text] -> Request -> Bool
 postPath path = (== path) . pathInfo
 
 filteredGetTo :: [Text] -> Request -> Bool
-filteredGetTo path request = 
-  not (isSimpleGet $ queryString request)
-  && pathInfo request == path
+filteredGetTo path request =
+  not (isSimpleGet $ queryString request) && pathInfo request == path
 
 simpleGetTo :: [Text] -> Request -> Bool
-simpleGetTo path request = 
-  isSimpleGet (queryString request)
-  && pathInfo request == path
+simpleGetTo path request =
+  isSimpleGet (queryString request) && pathInfo request == path
 
 isSimpleGet :: Query -> Bool
 isSimpleGet [] = True
@@ -66,10 +66,10 @@ isCommentsDelete :: Request -> Bool
 isCommentsDelete request =
   case pathInfo request of
     ["posts", pNumber, "comments", "delete"] -> True
-    _                              -> False
+    _ -> False
 
 isCommentsRequest :: Request -> Bool
 isCommentsRequest request =
   case pathInfo request of
     ["posts", pNumber, "comments"] -> True
-    _                              -> False
+    _ -> False

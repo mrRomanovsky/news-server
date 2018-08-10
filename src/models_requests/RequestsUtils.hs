@@ -2,14 +2,8 @@
 
 module RequestsUtils where
 
-
 import qualified Author as A
 import qualified Category as C
-import qualified Draft as D
-import qualified Post as PS
-import qualified PostDTO as P
-import qualified Tag as T
-import qualified User as U
 import Control.Monad (join)
 import Data.Aeson
 import qualified Data.ByteString as BS
@@ -18,31 +12,43 @@ import Data.Text hiding (filter, head)
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple hiding (Query)
 import DbRequests
+import qualified Draft as D
 import Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status422)
 import Network.Wai
+import qualified Post as PS
+import qualified PostDTO as P
 import Prelude hiding (read)
+import qualified Tag as T
+import qualified User as U
 
-actionWithBody :: Request -> (B.ByteString -> Connection -> IO Response) -> Connection -> IO Response
-actionWithBody request act c = 
-  strictRequestBody request >>= (`act` c)
+actionWithBody ::
+     Request
+  -> (B.ByteString -> Connection -> IO Response)
+  -> Connection
+  -> IO Response
+actionWithBody request act c = strictRequestBody request >>= (`act` c)
 
-authorizeRequest :: Request -> (Connection -> IO Response) -> Connection -> IO Response
-authorizeRequest request = 
+authorizeRequest ::
+     Request -> (Connection -> IO Response) -> Connection -> IO Response
+authorizeRequest request =
   let auth = lookup hAuthorization $ requestHeaders request
-      in authResponse auth
+   in authResponse auth
 
 respondJson :: ToJSON m => [m] -> Response
 respondJson =
   responseLBS status200 [("Content-Type", "application/json")] . encode
 
-getAdditionalParams :: Request -> (Maybe Integer, Maybe BS.ByteString, Maybe BS.ByteString)
-getAdditionalParams request = 
+getAdditionalParams ::
+     Request -> (Maybe Integer, Maybe BS.ByteString, Maybe BS.ByteString)
+getAdditionalParams request =
   let sortBy = join $ lookup "sort_by" $ queryString request
       mPage = lookup "page" $ queryString request
-      page = mPage >>= maybe Nothing (decode . B.fromStrict :: BS.ByteString -> Maybe Integer)
+      page =
+        mPage >>=
+        maybe Nothing (decode . B.fromStrict :: BS.ByteString -> Maybe Integer)
       auth = lookup hAuthorization $ requestHeaders request
-      in (page, sortBy, auth)
+   in (page, sortBy, auth)
 
 decodeUser = eitherDecode :: B.ByteString -> Either String U.User
 

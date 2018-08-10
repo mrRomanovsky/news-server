@@ -7,8 +7,8 @@ module Draft where
 import Control.Applicative
 import Control.Exception
 import Control.Monad
-import Data.Maybe (isNothing)
 import Data.Aeson
+import Data.Maybe (isNothing)
 import Data.Text
 import Data.Vector
 import Database.PostgreSQL.Simple

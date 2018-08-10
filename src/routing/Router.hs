@@ -1,12 +1,12 @@
 module Router where
 
-import Network.HTTP.Types (Query, methodGet, methodPost, status200)
-import Network.Wai
 import Data.Maybe (fromMaybe)
-import System.Environment
 import Database.PostgreSQL.Simple
-import Network.Wai.Handler.Warp (run)
 import DbRequests
+import Network.HTTP.Types (Query, methodGet, methodPost)
+import Network.Wai
+import Network.Wai.Handler.Warp (run)
+import System.Environment
 
 type Router = Request -> Connection -> IO Response
 
@@ -28,5 +28,5 @@ isPostRequest = (== methodPost) . requestMethod
 addRouter :: (Request -> Bool) -> Router -> Router -> Router
 addRouter condition newRouter oldRouter request =
   if condition request
-     then newRouter request
-     else oldRouter request
+    then newRouter request
+    else oldRouter request

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PostDTORequests where
+module PostRequests (getPostsSimple, getPostsFiltered, getPostsBy) where
 
 import Data.Aeson
 import qualified Data.ByteString as BS

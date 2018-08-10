@@ -11,6 +11,7 @@ import Control.Applicative
 import Control.Monad
 import Data.Aeson
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
 import Data.String (fromString)
 import Data.Text hiding (takeWhile)
 import Data.Text.Encoding (decodeUtf8)
@@ -75,7 +76,7 @@ instance FromRow PostDTO where
     field <*>
     field
 
-insertComment :: Text -> B.ByteString -> Connection -> IO ()
+insertComment :: Text -> BL.ByteString -> Connection -> IO ()
 insertComment pNumber comment conn =
   void $ execute conn insertCommentQuery (comment, pNumber)
 
@@ -85,7 +86,7 @@ insertCommentQuery =
 \SET post_comments[array_length(post_comments, 1) + 1] = ? \
 \WHERE post_id = ?"
 
-deleteComment :: Text -> B.ByteString -> Connection -> IO ()
+deleteComment :: Text -> BL.ByteString -> Connection -> IO ()
 deleteComment pNumber cNumber conn =
   void $ execute conn deleteCommentQuery (cNumber, pNumber)
 

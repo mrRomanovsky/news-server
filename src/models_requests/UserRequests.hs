@@ -1,4 +1,4 @@
-module UserRequests where
+module UserRequests (getUsers, createUser, deleteUser) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B

@@ -1,4 +1,4 @@
-module TagRequests where
+module TagRequests (getTags, createTag, updateTag, deleteTag) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B

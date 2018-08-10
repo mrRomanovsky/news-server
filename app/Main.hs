@@ -3,34 +3,46 @@
 module Main where
 
 import Control.Exception
-import Database.PostgreSQL.Simple
-import Network.HTTP.Types (Query, methodGet, methodPost, status200, status500)
+import Database.PostgreSQL.Simple hiding (Query)
+import Network.HTTP.Types (status500)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Requests
-import User
+import Routing
+import System.Environment
+import Data.Maybe (fromMaybe)
+
+main = run 3000 application 
 
 application :: Application
 application request respond = do
   appendFile "news-server.log" "\nRequest : "
   appendFile "news-server.log" $ '\n' : show request
-  response <- catch (processRequest request) handleRequestException
+  c <- getConnection
+  response <- catch (routers request c) handleRequestException
   rResult <- respond response
   appendFile "news-server.log" $
     "\nResponded with status : " ++ show (responseStatus response)
   return rResult
 
+getConnection :: IO Connection
+getConnection = do
+  dbPassword <- fromMaybe undefined <$> lookupEnv "NEWS_DB_PASSW"
+  connect
+    defaultConnectInfo
+      { connectDatabase = "news-server"
+      , connectUser = "news-server"
+      , connectPassword = dbPassword
+      }
+
 handleRequestException :: SomeException -> IO Response
 handleRequestException e = do
   appendFile "news-server.log" $
     "\nException occured during request processing: " ++ show e
-  return commentUpdated
+  return errorOccured
 
-commentUpdated :: Response
-commentUpdated =
+errorOccured :: Response
+errorOccured =
   responseLBS
     status500
     [("Content-Type", "application/json")]
     "Error occured. Please, try again later"
-
-main = run 3000 application

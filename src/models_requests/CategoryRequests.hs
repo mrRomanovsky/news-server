@@ -1,4 +1,4 @@
-module CategoryRequests where
+module CategoryRequests (getCategories, createCategory, deleteCategory, updateCategory) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B

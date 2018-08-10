@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module DraftRequests where
+
+module DraftRequests (getDrafts, createDraft, updateDraft, deleteDraft, publishDraft) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B

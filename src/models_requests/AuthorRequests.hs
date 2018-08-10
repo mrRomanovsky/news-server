@@ -1,4 +1,4 @@
-module AuthorRequests where
+module AuthorRequests (getAuthors, createAuthor, deleteAuthor, updateAuthor) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B

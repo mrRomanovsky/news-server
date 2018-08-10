@@ -36,6 +36,7 @@ library:
     - src
     - src/models
     - src/models_requests
+    - src/routing
 
 executables:
   news-server-exe:

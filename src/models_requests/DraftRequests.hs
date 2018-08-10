@@ -1,24 +1,30 @@
 {-# LANGUAGE OverloadedStrings #-}
-module DraftRequests where
+
+module DraftRequests
+  ( getDrafts
+  , createDraft
+  , updateDraft
+  , deleteDraft
+  , publishDraft
+  ) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
+import DbRequests
+import qualified Draft as D
 import Model
+import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
 import Prelude hiding (read)
-import qualified Draft as D
-import DbRequests
 import RequestsUtils
-import Network.HTTP.Types (hAuthorization, status200)
 
 type DraftIdAction = Either String D.DraftId -> Connection -> IO Response
 
 getDrafts :: Request -> Connection -> IO Response
 getDrafts request =
   let (page, sortBy, auth) = getAdditionalParams request
-      in fmap respondJson .
-          getDraftsAuth auth (read page sortBy)
+   in fmap respondJson . getDraftsAuth auth (read page sortBy)
 
 getDraftsAuth ::
      Maybe AuthData
@@ -53,7 +59,11 @@ deleteDraft request c = do
 updateDraft :: Request -> Connection -> IO Response
 updateDraft = draftModelAction updateModel
 
-draftModelAction :: (Either String D.Draft -> Connection -> IO Response) -> Request -> Connection -> IO Response
+draftModelAction ::
+     (Either String D.Draft -> Connection -> IO Response)
+  -> Request
+  -> Connection
+  -> IO Response
 draftModelAction act request c = do
   let auth = lookup hAuthorization $ requestHeaders request
   d <- strictRequestBody request

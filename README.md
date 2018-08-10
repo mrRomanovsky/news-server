@@ -99,15 +99,23 @@ After building the app and setting environment variables you can launci it with 
 
   DbRequests.hs - some common requests to the database used in other modules;
 
-  GetRequests.hs - processing GET-requests
-
-  PostRequests.hs - processing POST-requests
-
   Model.hs - typeclass for entities in the database
 
   Requests.hs - processing GET and POSTS requests (using GetRequests.hs and PostRequests.hs) 
 
 /src/models/Author.hs, Category.hs, ... etc. - instances of Model typeclass for database entities
+
+### Request handlers
+
+/src/models_requests/AuthorRequests.hs, CategoryRequests.hs, .. - request handlers for models
+
+/src/models_requests/RequestsUtils.hs - helper-functions for request handlers
+
+### Routing
+
+/routing/Router.hs - router type and helper-functions for routing
+
+/routing/Routing.hs - routing configuration (setting request handlers for routes)
 
 ## Testing
 

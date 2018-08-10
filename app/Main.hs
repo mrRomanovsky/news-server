@@ -22,6 +22,7 @@ application request respond = do
   rResult <- respond response
   appendFile "news-server.log" $
     "\nResponded with status : " ++ show (responseStatus response)
+  close c
   return rResult
 
 getConnection :: IO Connection

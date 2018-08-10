@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module AuthorRequests where
 
 import qualified Author as A

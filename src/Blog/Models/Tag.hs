@@ -38,9 +38,8 @@ instance FromJSON TagId where
   parseJSON = fmap TagId . parseJSON
 
 instance FromField TagId where
-  fromField field mdata = do
-    x <- fromField field mdata
-    return $ TagId x
+  fromField field mdata =
+    TagId <$> fromField field mdata
 
 instance ToField TagId where
   toField = toField . tId

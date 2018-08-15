@@ -48,9 +48,8 @@ instance FromJSON UserId where
   parseJSON = fmap UserId . parseJSON
 
 instance FromField UserId where
-  fromField field mdata = do
-    x <- fromField field mdata
-    return $ UserId x
+  fromField field mdata =
+    UserId <$> fromField field mdata
 
 instance ToField UserId where
   toField = toField . uId

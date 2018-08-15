@@ -37,9 +37,8 @@ instance FromJSON CategoryId where
   parseJSON = fmap CategoryId . parseJSON
 
 instance FromField CategoryId where
-  fromField field mdata = do
-    x <- fromField field mdata
-    return $ CategoryId x
+  fromField field mdata =
+    CategoryId <$> fromField field mdata
 
 instance ToField CategoryId where
   toField = toField . cId

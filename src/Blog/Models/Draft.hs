@@ -50,9 +50,8 @@ instance FromJSON DraftId where
   parseJSON = fmap DraftId . parseJSON
 
 instance FromField DraftId where
-  fromField field mdata = do
-    x <- fromField field mdata
-    return $ DraftId x
+  fromField field mdata =
+    DraftId <$> fromField field mdata
 
 instance ToField DraftId where
   toField = toField . dId

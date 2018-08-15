@@ -53,9 +53,8 @@ instance ToJSON PostId where
   toJSON = toJSON . pId
 
 instance FromField PostId where
-  fromField field mdata = do
-    x <- fromField field mdata
-    return $ PostId x
+  fromField field mdata =
+    PostId <$> fromField field mdata
 
 instance ToField PostId where
   toField = toField . pId

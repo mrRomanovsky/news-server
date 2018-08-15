@@ -5,6 +5,8 @@ module Blog.ServerDB.DbRequests where
 
 import Control.Applicative
 import Control.Monad
+import Data.Maybe (fromMaybe)
+import System.Environment
 import qualified Data.ByteString as B
 import Data.String (fromString)
 import Data.Text
@@ -18,6 +20,16 @@ import Network.HTTP.Types (Query, hAuthorization, status200, status404)
 import Network.Wai
 
 type AuthData = B.ByteString
+
+getConnection :: IO Connection
+getConnection = do
+  dbPassword <- fromMaybe undefined <$> lookupEnv "NEWS_DB_PASSW"
+  connect
+    defaultConnectInfo
+      { connectDatabase = "news-server"
+      , connectUser = "news-server"
+      , connectPassword = dbPassword
+      }
 
 getDraftAuthor :: Integer -> Connection -> IO Integer
 getDraftAuthor dId conn = do

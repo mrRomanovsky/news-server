@@ -1,7 +1,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Model where
+module Models.Model where
 
 import Data.Aeson
 import qualified Data.ByteString as B

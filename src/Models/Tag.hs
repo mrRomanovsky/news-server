@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Tag where
+module Models.Tag where
 
 import Control.Applicative
 import Control.Monad
@@ -15,9 +15,9 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import DbRequests
+import ServerDB.DbRequests
 import GHC.Generics
-import Model
+import Models.Model
 
 data Tag = Tag
   { tagId :: TagId
@@ -56,9 +56,9 @@ instance FromRow Tag where
   fromRow = Tag <$> field <*> field
 
 instance Model Tag TagId where
-  create Tag {Tag.tagName = n} conn =
+  create Tag {tagName = n} conn =
     void $ execute conn "INSERT INTO tags(tag_name) values (?)" [n]
   read = getRecords "tags"
-  update Tag {Tag.tagId = tId, Tag.tagName = tName} conn =
+  update Tag {tagId = tId, tagName = tName} conn =
     void $ execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?" (tName, tId)
   delete tId conn = void $ execute conn "DELETE FROM tags WHERE tag_id=?" [tId]

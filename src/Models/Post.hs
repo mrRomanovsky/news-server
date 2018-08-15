@@ -3,10 +3,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Post where
+module Models.Post where
 
-import Author
-import Category
+import Models.Author
+import Models.Category
 import Control.Applicative
 import Data.Aeson
 import qualified Data.ByteString as B
@@ -19,13 +19,13 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import DbRequests
+import ServerDB.DbRequests
 import GHC.Generics
-import Model
-import qualified PostDTO as DT
+import Models.Model
+import qualified Models.PostDTO as DT
 import Prelude hiding (takeWhile)
-import Tag
-import User
+import Models.Tag
+import Models.User
 
 data Post = Post
   { postId :: Integer

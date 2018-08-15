@@ -3,10 +3,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module PostDTO where
+module Models.PostDTO where
 
-import Author
-import Category
+import Models.Author
+import Models.Category
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -22,12 +22,12 @@ import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import DbRequests
+import ServerDB.DbRequests
 import GHC.Generics
-import Model
+import Models.Model
 import Prelude hiding (takeWhile)
-import Tag
-import User
+import Models.Tag
+import Models.User
 
 data PostDTO = PostDTO
   { postId :: PostId

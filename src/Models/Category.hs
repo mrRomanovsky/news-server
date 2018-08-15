@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Category where
+module Models.Category where
 
 import Control.Applicative
 import Control.Monad
@@ -13,9 +13,9 @@ import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
-import DbRequests
 import GHC.Generics
-import Model
+import Models.Model
+import ServerDB.DbRequests
 
 data Category = Category
   { categoryId :: CategoryId
@@ -45,16 +45,16 @@ instance ToField CategoryId where
   toField = toField . cId
 
 instance Model Category CategoryId where
-  create Category {Category.name = n, Category.nestedCategories = pId} conn =
+  create Category {Models.Category.name = n, nestedCategories = pId} conn =
     void $
     execute
       conn
       "INSERT INTO categories(category_name, category_nested_categories) values (?,?)"
       (n, pId)
   read = getRecords "categories"
-  update Category { Category.categoryId = cId
-                  , Category.name = n
-                  , Category.nestedCategories = pId
+  update Category { categoryId = cId
+                  , Models.Category.name = n
+                  , nestedCategories = pId
                   } conn =
     void $
     execute

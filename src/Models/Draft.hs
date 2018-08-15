@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Draft where
+module Models.Draft where
 
 import Control.Applicative
 import Control.Exception
@@ -16,11 +16,11 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import DbRequests
+import ServerDB.DbRequests
 import GHC.Generics
-import Model
-import qualified PostDTO as P
-import qualified User as U
+import Models.Model
+import qualified Models.PostDTO as P
+import qualified Models.User as U
 
 data Draft = Draft
   { draftId :: DraftId
@@ -58,15 +58,15 @@ instance ToField DraftId where
   toField = toField . dId
 
 instance Model Draft DraftId where
-  create Draft { Draft.postId = pId
-               , Draft.authorId = aId
-               , Draft.postName = dName
-               , Draft.creationTime = dTime
-               , Draft.categoryId = cId
-               , Draft.tags = dTags
-               , Draft.textContent = dText
-               , Draft.mainPhoto = dPhoto
-               , Draft.additionalPhotos = dAddPhotos
+  create Draft { postId = pId
+               , authorId = aId
+               , postName = dName
+               , creationTime = dTime
+               , categoryId = cId
+               , tags = dTags
+               , textContent = dText
+               , mainPhoto = dPhoto
+               , additionalPhotos = dAddPhotos
                } conn =
     if isNothing pId --inserting draft without existing post 
       then void $
@@ -81,15 +81,15 @@ instance Model Draft DraftId where
              (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
   read = getRecords "drafts"
   update Draft { draftId = dId
-               , Draft.postId = pId
-               , Draft.authorId = aId
-               , Draft.postName = dName
-               , Draft.creationTime = dTime
-               , Draft.categoryId = cId
-               , Draft.tags = dTags
-               , Draft.textContent = dText
-               , Draft.mainPhoto = dPhoto
-               , Draft.additionalPhotos = dAddPhotos
+               , postId = pId
+               , authorId = aId
+               , postName = dName
+               , creationTime = dTime
+               , categoryId = cId
+               , tags = dTags
+               , textContent = dText
+               , mainPhoto = dPhoto
+               , additionalPhotos = dAddPhotos
                } conn =
     if isNothing pId
       then void $

@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RequestsUtils where
+module ModelsRequests.RequestsUtils where
 
-import qualified Author as A
-import qualified Category as C
+import qualified Models.Author as A
+import qualified Models.Category as C
 import Control.Monad (join)
 import Data.Aeson
 import qualified Data.ByteString as BS
@@ -11,16 +11,16 @@ import qualified Data.ByteString.Lazy as B
 import Data.Text hiding (filter, head)
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple hiding (Query)
-import DbRequests
-import qualified Draft as D
-import Model
+import ServerDB.DbRequests
+import qualified Models.Draft as D
+import Models.Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status422)
 import Network.Wai
-import qualified Post as PS
-import qualified PostDTO as P
+import qualified Models.Post as PS
+import qualified Models.PostDTO as P
 import Prelude hiding (read)
-import qualified Tag as T
-import qualified User as U
+import qualified Models.Tag as T
+import qualified Models.User as U
 
 actionWithBody ::
      Request

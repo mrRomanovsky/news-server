@@ -1,8 +1,8 @@
-module Router where
+module Routing.Router where
 
 import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Simple
-import DbRequests
+import ServerDB.DbRequests
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)

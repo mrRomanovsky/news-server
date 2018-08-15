@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module User where
+module Models.User where
 
 import Control.Applicative
 import Control.Monad
@@ -21,9 +21,9 @@ import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import DbRequests
 import GHC.Generics
-import Model
+import Models.Model
+import ServerDB.DbRequests
 
 data User = User
   { userId :: UserId
@@ -76,7 +76,10 @@ instance FromJSON User where
 instance ToJSON User
 
 instance Model User UserId where
-  create User {User.name = n, User.surname = s, User.avatar = a} conn =
+  create User { Models.User.name = n
+              , Models.User.surname = s
+              , Models.User.avatar = a
+              } conn =
     void $
     execute
       conn

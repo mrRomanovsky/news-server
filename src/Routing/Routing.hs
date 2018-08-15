@@ -1,21 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Routing
+module Routing.Routing
   ( routers
   ) where
 
-import AuthorRequests
-import CategoryRequests
-import CommentRequests
+import ModelsRequests.AuthorRequests
+import ModelsRequests.CategoryRequests
+import ModelsRequests.CommentRequests
 import Data.Text
-import DraftRequests
+import ModelsRequests.DraftRequests
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import PostRequests
-import Router
-import TagRequests
-import UserRequests
+import ModelsRequests.PostRequests
+import Routing.Router
+import ModelsRequests.TagRequests
+import ModelsRequests.UserRequests
 
 routers :: Router
 routers =

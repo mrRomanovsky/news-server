@@ -1,18 +1,18 @@
-module CategoryRequests
+module ModelsRequests.CategoryRequests
   ( getCategories
   , createCategory
   , deleteCategory
   , updateCategory
   ) where
 
-import qualified Category as C
+import qualified Models.Category as C
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Model
+import Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import RequestsUtils
+import ModelsRequests.RequestsUtils
 
 getCategories :: Request -> Connection -> IO Response
 getCategories request =

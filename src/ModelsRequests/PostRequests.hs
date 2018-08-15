@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PostRequests
+module ModelsRequests.PostRequests
   ( getPostsSimple
   , getPostsFiltered
   , getPostsBy
@@ -9,13 +9,13 @@ module PostRequests
 import Data.Aeson
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple
-import DbRequests
-import Model
+import ServerDB.DbRequests
+import Models.Model
 import Network.Wai
-import qualified Post as P
-import qualified PostDTO as PD
+import qualified Models.Post as P
+import qualified Models.PostDTO as PD
 import Prelude hiding (read)
-import RequestsUtils
+import ModelsRequests.RequestsUtils
 
 getPostsSimple :: Request -> Connection -> IO Response
 getPostsSimple request =

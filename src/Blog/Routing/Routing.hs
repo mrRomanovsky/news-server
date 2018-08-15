@@ -4,18 +4,18 @@ module Blog.Routing.Routing
   ( routers
   ) where
 
-import Blog.ModelsRequests.AuthorRequests
-import Blog.ModelsRequests.CategoryRequests
-import Blog.ModelsRequests.CommentRequests
+import Blog.Handlers.Author
+import Blog.Handlers.Category
+import Blog.Handlers.Comment
 import Data.Text
-import Blog.ModelsRequests.DraftRequests
+import Blog.Handlers.Draft
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Blog.ModelsRequests.PostRequests
+import Blog.Handlers.Post
 import Blog.Routing.Router
-import Blog.ModelsRequests.TagRequests
-import Blog.ModelsRequests.UserRequests
+import Blog.Handlers.Tag
+import Blog.Handlers.User
 
 routers :: Router
 routers =

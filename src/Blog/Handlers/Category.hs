@@ -1,4 +1,4 @@
-module Blog.ModelsRequests.CategoryRequests
+module Blog.Handlers.Category
   ( getCategories
   , createCategory
   , deleteCategory
@@ -12,7 +12,7 @@ import Database.PostgreSQL.Simple
 import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 
 getCategories :: Request -> Connection -> IO Response
 getCategories request =

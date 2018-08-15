@@ -1,4 +1,4 @@
-module Blog.ModelsRequests.TagRequests
+module Blog.Handlers.Tag
   ( getTags
   , createTag
   , updateTag
@@ -11,7 +11,7 @@ import Database.PostgreSQL.Simple
 import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.Tag as T
 
 getTags :: Request -> Connection -> IO Response

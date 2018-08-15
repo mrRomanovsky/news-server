@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blog.ModelsRequests.CommentRequests
+module Blog.Handlers.Comment
   ( getComments
   , createComment
-  , Blog.ModelsRequests.CommentRequests.deleteComment
+  , Blog.Handlers.Comment.deleteComment
   ) where
 
 import Data.Aeson
@@ -16,7 +16,7 @@ import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
 import Blog.Models.PostDTO as P
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 
 getComments :: Request -> Connection -> IO Response
 getComments request =

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blog.ModelsRequests.PostRequests
+module Blog.Handlers.Post
   ( getPostsSimple
   , getPostsFiltered
   , getPostsBy
@@ -15,7 +15,7 @@ import Network.Wai
 import qualified Blog.Models.Post as P
 import qualified Blog.Models.PostDTO as PD
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 
 getPostsSimple :: Request -> Connection -> IO Response
 getPostsSimple request =

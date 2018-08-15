@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blog.ModelsRequests.RequestsUtils where
+module Blog.Handlers.HandlersUtils where
 
 import qualified Blog.Models.Author as A
 import qualified Blog.Models.Category as C

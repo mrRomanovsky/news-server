@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blog.ModelsRequests.DraftRequests
+module Blog.Handlers.Draft
   ( getDrafts
   , createDraft
   , updateDraft
@@ -17,7 +17,7 @@ import Blog.Models.Model
 import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 
 type DraftIdAction = Either String D.DraftId -> Connection -> IO Response
 

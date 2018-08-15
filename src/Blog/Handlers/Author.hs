@@ -1,4 +1,4 @@
-module Blog.ModelsRequests.AuthorRequests
+module Blog.Handlers.Author
   ( getAuthors
   , createAuthor
   , deleteAuthor
@@ -13,7 +13,7 @@ import Blog.ServerDB.DbRequests
 import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 
 getAuthors :: Request -> Connection -> IO Response
 getAuthors request =

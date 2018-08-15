@@ -1,4 +1,4 @@
-module Blog.ModelsRequests.UserRequests
+module Blog.Handlers.User
   ( getUsers
   , createUser
   , deleteUser
@@ -10,7 +10,7 @@ import Database.PostgreSQL.Simple
 import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.ModelsRequests.RequestsUtils
+import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.User as U
 
 getUsers :: Request -> Connection -> IO Response

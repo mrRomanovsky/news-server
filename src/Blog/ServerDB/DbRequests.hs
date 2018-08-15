@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
-module ServerDB.DbRequests where
+module Blog.ServerDB.DbRequests where
 
 import Control.Applicative
 import Control.Monad
@@ -13,7 +13,7 @@ import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Types hiding (Query)
-import Models.Model
+import Blog.Models.Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status404)
 import Network.Wai
 

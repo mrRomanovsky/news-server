@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Models.Draft where
+module Blog.Models.Draft where
 
 import Control.Applicative
 import Control.Exception
@@ -16,11 +16,11 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import ServerDB.DbRequests
+import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Models.Model
-import qualified Models.PostDTO as P
-import qualified Models.User as U
+import Blog.Models.Model
+import qualified Blog.Models.PostDTO as P
+import qualified Blog.Models.User as U
 
 data Draft = Draft
   { draftId :: DraftId

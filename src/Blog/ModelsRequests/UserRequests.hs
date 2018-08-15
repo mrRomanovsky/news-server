@@ -1,4 +1,4 @@
-module ModelsRequests.UserRequests
+module Blog.ModelsRequests.UserRequests
   ( getUsers
   , createUser
   , deleteUser
@@ -7,11 +7,11 @@ module ModelsRequests.UserRequests
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Models.Model
+import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import ModelsRequests.RequestsUtils
-import qualified Models.User as U
+import Blog.ModelsRequests.RequestsUtils
+import qualified Blog.Models.User as U
 
 getUsers :: Request -> Connection -> IO Response
 getUsers request =

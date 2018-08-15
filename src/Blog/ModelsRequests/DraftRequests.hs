@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ModelsRequests.DraftRequests
+module Blog.ModelsRequests.DraftRequests
   ( getDrafts
   , createDraft
   , updateDraft
@@ -11,13 +11,13 @@ module ModelsRequests.DraftRequests
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import ServerDB.DbRequests
-import qualified Models.Draft as D
-import Models.Model
+import Blog.ServerDB.DbRequests
+import qualified Blog.Models.Draft as D
+import Blog.Models.Model
 import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
 import Prelude hiding (read)
-import ModelsRequests.RequestsUtils
+import Blog.ModelsRequests.RequestsUtils
 
 type DraftIdAction = Either String D.DraftId -> Connection -> IO Response
 

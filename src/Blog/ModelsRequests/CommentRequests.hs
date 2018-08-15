@@ -1,22 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ModelsRequests.CommentRequests
+module Blog.ModelsRequests.CommentRequests
   ( getComments
   , createComment
-  , ModelsRequests.CommentRequests.deleteComment
+  , Blog.ModelsRequests.CommentRequests.deleteComment
   ) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Data.Text
 import Database.PostgreSQL.Simple
-import ServerDB.DbRequests
-import Models.Model
+import Blog.ServerDB.DbRequests
+import Blog.Models.Model
 import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
-import Models.PostDTO as P
+import Blog.Models.PostDTO as P
 import Prelude hiding (read)
-import ModelsRequests.RequestsUtils
+import Blog.ModelsRequests.RequestsUtils
 
 getComments :: Request -> Connection -> IO Response
 getComments request =

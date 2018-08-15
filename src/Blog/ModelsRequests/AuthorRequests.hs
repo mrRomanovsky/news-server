@@ -1,19 +1,19 @@
-module ModelsRequests.AuthorRequests
+module Blog.ModelsRequests.AuthorRequests
   ( getAuthors
   , createAuthor
   , deleteAuthor
   , updateAuthor
   ) where
 
-import qualified Models.Author as A
+import qualified Blog.Models.Author as A
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import ServerDB.DbRequests
-import Models.Model
+import Blog.ServerDB.DbRequests
+import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import ModelsRequests.RequestsUtils
+import Blog.ModelsRequests.RequestsUtils
 
 getAuthors :: Request -> Connection -> IO Response
 getAuthors request =

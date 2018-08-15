@@ -1,4 +1,4 @@
-module ModelsRequests.TagRequests
+module Blog.ModelsRequests.TagRequests
   ( getTags
   , createTag
   , updateTag
@@ -8,11 +8,11 @@ module ModelsRequests.TagRequests
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Models.Model
+import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import ModelsRequests.RequestsUtils
-import qualified Models.Tag as T
+import Blog.ModelsRequests.RequestsUtils
+import qualified Blog.Models.Tag as T
 
 getTags :: Request -> Connection -> IO Response
 getTags request =

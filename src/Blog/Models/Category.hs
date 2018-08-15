@@ -2,8 +2,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Models.Category where
+module Blog.Models.Category where
 
+import Blog.Models.Model
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -14,8 +16,6 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import GHC.Generics
-import Models.Model
-import ServerDB.DbRequests
 
 data Category = Category
   { categoryId :: CategoryId
@@ -45,7 +45,7 @@ instance ToField CategoryId where
   toField = toField . cId
 
 instance Model Category CategoryId where
-  create Category {Models.Category.name = n, nestedCategories = pId} conn =
+  create Category {Blog.Models.Category.name = n, nestedCategories = pId} conn =
     void $
     execute
       conn
@@ -53,7 +53,7 @@ instance Model Category CategoryId where
       (n, pId)
   read = getRecords "categories"
   update Category { categoryId = cId
-                  , Models.Category.name = n
+                  , Blog.Models.Category.name = n
                   , nestedCategories = pId
                   } conn =
     void $

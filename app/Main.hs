@@ -8,7 +8,7 @@ import Database.PostgreSQL.Simple hiding (Query)
 import Network.HTTP.Types (status500)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Routing.Routing
+import Blog.Routing.Routing
 import System.Environment
 
 main = run 3000 application

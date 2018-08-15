@@ -2,8 +2,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Models.Author where
+module Blog.Models.Author where
 
+import Blog.Models.Model
+import Blog.Models.User
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -13,9 +15,7 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import GHC.Generics
-import Models.Model
-import Models.User
-import ServerDB.DbRequests
+import Blog.ServerDB.DbRequests
 
 data Author = Author
   { authorId :: AuthorId
@@ -53,14 +53,14 @@ instance FromJSON Author where
 instance ToJSON Author
 
 instance Model Author AuthorId where
-  create Author {Models.Author.userId = uId, desc = aDesc} conn =
+  create Author {Blog.Models.Author.userId = uId, desc = aDesc} conn =
     void $
     execute
       conn
       "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
       (uId, aDesc)
   read = getRecords "authors"
-  update Author {authorId = aId, Models.Author.userId = uId, desc = aDesc} conn =
+  update Author {authorId = aId, Blog.Models.Author.userId = uId, desc = aDesc} conn =
     void $
     execute
       conn

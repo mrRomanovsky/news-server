@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Models.Tag where
+module Blog.Models.Tag where
 
 import Control.Applicative
 import Control.Monad
@@ -15,9 +15,9 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import ServerDB.DbRequests
+import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Models.Model
+import Blog.Models.Model
 
 data Tag = Tag
   { tagId :: TagId

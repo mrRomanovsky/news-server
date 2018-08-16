@@ -7,6 +7,10 @@ module Blog.Models.PostDTO where
 
 import Blog.Models.Author
 import Blog.Models.Category
+import Blog.Models.Model
+import Blog.Models.Tag
+import Blog.Models.User
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -22,12 +26,8 @@ import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Blog.Models.Model
 import Prelude hiding (takeWhile)
-import Blog.Models.Tag
-import Blog.Models.User
 
 data PostDTO = PostDTO
   { postId :: PostId
@@ -53,8 +53,7 @@ instance ToJSON PostId where
   toJSON = toJSON . pId
 
 instance FromField PostId where
-  fromField field mdata =
-    PostId <$> fromField field mdata
+  fromField field mdata = PostId <$> fromField field mdata
 
 instance ToField PostId where
   toField = toField . pId

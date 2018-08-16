@@ -6,6 +6,7 @@ module Blog.Models.Author where
 
 import Blog.Models.Model
 import Blog.Models.User
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -15,7 +16,6 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import GHC.Generics
-import Blog.ServerDB.DbRequests
 
 data Author = Author
   { authorId :: Maybe AuthorId
@@ -37,16 +37,14 @@ instance FromJSON AuthorId where
   parseJSON = fmap AuthorId . parseJSON
 
 instance FromField AuthorId where
-  fromField field mdata =
-    AuthorId <$> fromField field mdata
+  fromField field mdata = AuthorId <$> fromField field mdata
 
 instance ToField AuthorId where
   toField = toField . aId
 
 instance FromJSON Author where
   parseJSON (Object v) =
-    Author <$> v .:? "authorId" <*> v .: "userId" <*>
-    v .:? "desc"
+    Author <$> v .:? "authorId" <*> v .: "userId" <*> v .:? "desc"
   parseJSON _ = mzero
 
 instance ToJSON Author

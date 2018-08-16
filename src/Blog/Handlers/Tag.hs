@@ -5,14 +5,14 @@ module Blog.Handlers.Tag
   , deleteTag
   ) where
 
+import Blog.Handlers.HandlersUtils
+import Blog.Models.Model
+import qualified Blog.Models.Tag as T
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
-import qualified Blog.Models.Tag as T
 
 getTags :: Request -> Connection -> IO Response
 getTags request =

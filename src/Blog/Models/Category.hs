@@ -37,8 +37,7 @@ instance FromJSON CategoryId where
   parseJSON = fmap CategoryId . parseJSON
 
 instance FromField CategoryId where
-  fromField field mdata =
-    CategoryId <$> fromField field mdata
+  fromField field mdata = CategoryId <$> fromField field mdata
 
 instance ToField CategoryId where
   toField = toField . cId
@@ -65,8 +64,7 @@ instance Model Category CategoryId where
 
 instance FromJSON Category where
   parseJSON (Object v) =
-    Category <$> v .:? "categoryId" <*> v .: "name" <*>
-    v .:? "parentId"
+    Category <$> v .:? "categoryId" <*> v .: "name" <*> v .:? "parentId"
   parseJSON _ = mzero
 
 instance ToJSON Category

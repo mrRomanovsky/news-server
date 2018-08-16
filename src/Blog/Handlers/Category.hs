@@ -5,14 +5,14 @@ module Blog.Handlers.Category
   , updateCategory
   ) where
 
+import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.Category as C
+import Blog.Models.Model
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
 
 getCategories :: Request -> Connection -> IO Response
 getCategories request =

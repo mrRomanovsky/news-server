@@ -7,6 +7,11 @@ module Blog.Models.Post where
 
 import Blog.Models.Author
 import Blog.Models.Category
+import Blog.Models.Model
+import qualified Blog.Models.PostDTO as DT
+import Blog.Models.Tag
+import Blog.Models.User
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Data.Aeson
 import qualified Data.ByteString as B
@@ -19,13 +24,8 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Blog.Models.Model
-import qualified Blog.Models.PostDTO as DT
 import Prelude hiding (takeWhile)
-import Blog.Models.Tag
-import Blog.Models.User
 
 data Post = Post
   { postId :: Integer

@@ -6,6 +6,8 @@
 
 module Blog.Models.User where
 
+import Blog.Models.Model
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -22,8 +24,6 @@ import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
 import GHC.Generics
-import Blog.Models.Model
-import Blog.ServerDB.DbRequests
 
 data User = User
   { userId :: Maybe UserId
@@ -48,8 +48,7 @@ instance FromJSON UserId where
   parseJSON = fmap UserId . parseJSON
 
 instance FromField UserId where
-  fromField field mdata =
-    UserId <$> fromField field mdata
+  fromField field mdata = UserId <$> fromField field mdata
 
 instance ToField UserId where
   toField = toField . uId
@@ -75,10 +74,7 @@ instance FromJSON User where
 instance ToJSON User
 
 instance Model User UserId where
-  create User { Blog.Models.User.name = n
-              , surname = s
-              , avatar = a
-              } conn =
+  create User {Blog.Models.User.name = n, surname = s, avatar = a} conn =
     void $
     execute
       conn

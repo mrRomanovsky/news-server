@@ -21,8 +21,7 @@ authResponse auth respond conn = do
     else return notFound
 
 authorizeAdmin :: Maybe AuthData -> Connection -> IO Bool
-authorizeAdmin auth conn =
-  maybe (return False) (`checkAdmin` conn) auth
+authorizeAdmin auth conn = maybe (return False) (`checkAdmin` conn) auth
 
 checkAdmin :: B.ByteString -> Connection -> IO Bool
 checkAdmin uId conn = do

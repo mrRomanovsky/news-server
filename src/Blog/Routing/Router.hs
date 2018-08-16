@@ -1,8 +1,8 @@
 module Blog.Routing.Router where
 
+import Blog.Exceptions.Exceptions
 import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Simple
-import Blog.Exceptions.Exceptions
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)

@@ -3,31 +3,31 @@
 
 module Blog.ServerDB.DbRequests where
 
+import Blog.Config.Config
+import Blog.Models.Model
 import Control.Applicative
 import Control.Monad
-import Data.Maybe (fromMaybe)
-import System.Environment
 import qualified Data.ByteString as B
+import Data.List (isSuffixOf)
+import Data.Maybe (fromMaybe)
 import Data.String (fromString)
 import qualified Data.Text as T
-import Data.List (isSuffixOf)
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Types hiding (Query)
-import Blog.Models.Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status404)
 import Network.Wai
+import System.Environment
 
-getConnection :: IO Connection
-getConnection = do
-  dbPassword <- fromMaybe undefined <$> lookupEnv "NEWS_DB_PASSW"
+getConnection :: ServerConfig -> IO Connection
+getConnection conf =
   connect
     defaultConnectInfo
-      { connectDatabase = "news-server"
-      , connectUser = "news-server"
-      , connectPassword = dbPassword
+      { connectDatabase = dbName conf
+      , connectUser = dbUser conf
+      , connectPassword = dbPassword conf
       }
 
 getRecords ::
@@ -47,8 +47,9 @@ selectOrdered = "SELECT * FROM ? ORDER BY ?"
 
 getDefaultOrder :: T.Text -> T.Text
 getDefaultOrder table
-  |"ies" `T.isSuffixOf` table = T.init (T.init $ T.init table) `T.append` "y_id"
-  |otherwise = T.init table `T.append` "_id"
+  | "ies" `T.isSuffixOf` table =
+    T.init (T.init $ T.init table) `T.append` "y_id"
+  | otherwise = T.init table `T.append` "_id"
 
 paginate ::
      Database.PostgreSQL.Simple.Query

@@ -6,16 +6,16 @@ module Blog.Handlers.Comment
   , Blog.Handlers.Comment.deleteComment
   ) where
 
+import Blog.Handlers.HandlersUtils
+import Blog.Models.Model
+import Blog.Models.PostDTO as P
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Data.Text
 import Database.PostgreSQL.Simple
-import Blog.Models.Model
 import Network.HTTP.Types (hAuthorization, status200)
 import Network.Wai
-import Blog.Models.PostDTO as P
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
 
 getComments :: Request -> Connection -> IO Response
 getComments request =

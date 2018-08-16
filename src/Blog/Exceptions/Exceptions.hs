@@ -5,14 +5,19 @@ module Blog.Exceptions.Exceptions
   , notFound
   ) where
 
+import Blog.Config.Config
+import Blog.Config.Logging
 import Control.Exception
+import Control.Monad (when)
 import Network.HTTP.Types (status404, status500)
 import Network.Wai
 
-handleRequestException :: SomeException -> IO Response
-handleRequestException e = do
-  appendFile "news-server.log" $
-    "\nException occured during request processing: " ++ show e
+handleRequestException :: ServerConfig -> SomeException -> IO Response
+handleRequestException c e = do
+  when
+    (logLevel c >= Debug)
+    (appendFile (logFile c) $
+     "\nException occured during request processing: " ++ show e)
   return errorOccured
 
 errorOccured :: Response

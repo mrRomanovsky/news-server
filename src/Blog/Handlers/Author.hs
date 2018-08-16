@@ -5,15 +5,15 @@ module Blog.Handlers.Author
   , updateAuthor
   ) where
 
+import Blog.Handlers.Authorization
+import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.Author as A
+import Blog.Models.Model
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Blog.Handlers.Authorization
-import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
 
 getAuthors :: Request -> Connection -> IO Response
 getAuthors request =

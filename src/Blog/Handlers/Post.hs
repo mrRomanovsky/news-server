@@ -6,16 +6,16 @@ module Blog.Handlers.Post
   , getPostsBy
   ) where
 
+import Blog.Exceptions.Exceptions
+import Blog.Handlers.HandlersUtils
+import Blog.Models.Model
+import qualified Blog.Models.Post as P
+import qualified Blog.Models.PostDTO as PD
 import Data.Aeson
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple
-import Blog.Exceptions.Exceptions
-import Blog.Models.Model
 import Network.Wai
-import qualified Blog.Models.Post as P
-import qualified Blog.Models.PostDTO as PD
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
 
 getPostsSimple :: Request -> Connection -> IO Response
 getPostsSimple request =

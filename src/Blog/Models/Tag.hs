@@ -5,6 +5,8 @@
 
 module Blog.Models.Tag where
 
+import Blog.Models.Model
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
@@ -15,9 +17,7 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.Types
-import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Blog.Models.Model
 
 data Tag = Tag
   { tagId :: Maybe TagId
@@ -38,8 +38,7 @@ instance FromJSON TagId where
   parseJSON = fmap TagId . parseJSON
 
 instance FromField TagId where
-  fromField field mdata =
-    TagId <$> fromField field mdata
+  fromField field mdata = TagId <$> fromField field mdata
 
 instance ToField TagId where
   toField = toField . tId
@@ -47,8 +46,7 @@ instance ToField TagId where
 instance ToJSON Tag
 
 instance FromJSON Tag where
-  parseJSON (Object v) =
-    Tag <$> v .:? "tagId" <*> v .: "tagName"
+  parseJSON (Object v) = Tag <$> v .:? "tagId" <*> v .: "tagName"
   parseJSON _ = mzero
 
 instance FromRow Tag where

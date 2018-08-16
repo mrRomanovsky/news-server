@@ -2,8 +2,16 @@
 
 module Blog.Handlers.HandlersUtils where
 
+import Blog.Exceptions.Exceptions
+import Blog.Handlers.Authorization
 import qualified Blog.Models.Author as A
 import qualified Blog.Models.Category as C
+import qualified Blog.Models.Draft as D
+import Blog.Models.Model
+import qualified Blog.Models.Post as PS
+import qualified Blog.Models.PostDTO as P
+import qualified Blog.Models.Tag as T
+import qualified Blog.Models.User as U
 import Control.Monad (join)
 import Data.Aeson
 import qualified Data.ByteString as BS
@@ -11,17 +19,9 @@ import qualified Data.ByteString.Lazy as B
 import Data.Text hiding (filter, head)
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple hiding (Query)
-import Blog.Handlers.Authorization
-import Blog.Exceptions.Exceptions
-import qualified Blog.Models.Draft as D
-import Blog.Models.Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status422)
 import Network.Wai
-import qualified Blog.Models.Post as PS
-import qualified Blog.Models.PostDTO as P
 import Prelude hiding (read)
-import qualified Blog.Models.Tag as T
-import qualified Blog.Models.User as U
 
 actionWithBody ::
      Request

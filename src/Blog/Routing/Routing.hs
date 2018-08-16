@@ -7,15 +7,15 @@ module Blog.Routing.Routing
 import Blog.Handlers.Author
 import Blog.Handlers.Category
 import Blog.Handlers.Comment
-import Data.Text
 import Blog.Handlers.Draft
+import Blog.Handlers.Post
+import Blog.Handlers.Tag
+import Blog.Handlers.User
+import Blog.Routing.Router
+import Data.Text
 import Network.HTTP.Types (Query, methodGet, methodPost)
 import Network.Wai
 import Network.Wai.Handler.Warp (run)
-import Blog.Handlers.Post
-import Blog.Routing.Router
-import Blog.Handlers.Tag
-import Blog.Handlers.User
 
 routers :: Router
 routers =
@@ -65,6 +65,6 @@ isSimpleGet _ = False
 matchPath :: [Text] -> [Text] -> Bool
 matchPath [] [] = True
 matchPath _ [] = False
-matchPath (x : xs) (y : ys)
+matchPath (x:xs) (y:ys)
   | x == "*" || x == y = matchPath xs ys
   | otherwise = False

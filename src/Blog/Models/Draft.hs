@@ -4,6 +4,10 @@
 
 module Blog.Models.Draft where
 
+import Blog.Models.Model
+import qualified Blog.Models.PostDTO as P
+import qualified Blog.Models.User as U
+import Blog.ServerDB.DbRequests
 import Control.Applicative
 import Control.Exception
 import Control.Monad
@@ -16,11 +20,7 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import Blog.ServerDB.DbRequests
 import GHC.Generics
-import Blog.Models.Model
-import qualified Blog.Models.PostDTO as P
-import qualified Blog.Models.User as U
 
 data Draft = Draft
   { draftId :: Maybe DraftId
@@ -50,8 +50,7 @@ instance FromJSON DraftId where
   parseJSON = fmap DraftId . parseJSON
 
 instance FromField DraftId where
-  fromField field mdata =
-    DraftId <$> fromField field mdata
+  fromField field mdata = DraftId <$> fromField field mdata
 
 instance ToField DraftId where
   toField = toField . dId
@@ -107,8 +106,7 @@ instance Model Draft DraftId where
 
 instance FromJSON Draft where
   parseJSON (Object v) =
-    Draft <$> v .:? "draftId" <*> v .:? "postId" <*>
-    pure (-1) <*>
+    Draft <$> v .:? "draftId" <*> v .:? "postId" <*> pure (-1) <*>
     v .: "postName" <*>
     v .:? "creationTime" <*>
     v .: "categoryId" <*>

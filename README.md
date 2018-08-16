@@ -83,7 +83,22 @@ Run command "sudo -u news-server psql -U news-server -h localhost -W -a -f db_sc
 
 Enter your password
 
-Set environment variable "NEWS_DB_PASSW" to the password for news-server user.
+### Environment Variables
+
+
+DB_NAME="name of your database"
+
+DB_USER="username for database"
+
+DB_PASSW="password to your database"
+
+LOG_LEVEL="choose one of: None, Requests, Debug"(default = None)
+
+LOG_FILE="file to write logs" (default = news-server.log)
+
+APP_PORT="port on which the applicatin will listen for requests" (default = 3000)
+
+IMPORTANT! db_schema creates database called "news-server" for user "news-server" if you want to use other database credentials you have to change not only the environment variables, but also the db_schema.sql script
 
 Run command "stack build"
 
@@ -95,27 +110,30 @@ After building the app and setting environment variables you can launci it with 
 
 /app/Main.hs - main function, launching web-server
 
-/src/
+/src/Blog/Config/Config.hs, Logging.hs - app's configuration
 
-  DbRequests.hs - some common requests to the database used in other modules;
+/src/Blog/Exceptions.hs - exception handling
 
-  Model.hs - typeclass for entities in the database
+/src/Blog/Server/NewsServer - connecting to the database, processing requests
 
-  Requests.hs - processing GET and POSTS requests (using GetRequests.hs and PostRequests.hs) 
+/src/Blog/ServerDB/Author.hs - tools for getting authors from the database
 
-/src/models/Author.hs, Category.hs, ... etc. - instances of Model typeclass for database entities
+/src/Blog/ServerDB/DbRequests.hs - tools for making requests to the database used in other modules
+
+
+/src/Blog/Models/Model.hs, Author.hs, Category.hs, ... etc. - Model typeclass and instances for corresponding database entities
 
 ### Request handlers
 
-/src/models_requests/AuthorRequests.hs, CategoryRequests.hs, .. - request handlers for models
+/src/Blog/Handlers/AuthorRequests.hs, CategoryRequests.hs, .. - request handlers for models
 
 /src/models_requests/RequestsUtils.hs - helper-functions for request handlers
 
 ### Routing
 
-/routing/Router.hs - router type and helper-functions for routing
+Blog/Routing/Router.hs - router type and helper-functions for routing
 
-/routing/Routing.hs - routing configuration (setting request handlers for routes)
+Blog/Routing/Routing.hs - routing configuration (setting request handlers for routes)
 
 ## Testing
 
@@ -124,4 +142,8 @@ sh-scripts in sh-requests folder
 
 ## Logging
 
-All logs are written to file "news-server.log".
+None - no logs
+
+Requests - requests + responses statuses
+
+Debug - Requests + errors

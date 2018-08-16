@@ -4,14 +4,14 @@ module Blog.Handlers.User
   , deleteUser
   ) where
 
+import Blog.Handlers.HandlersUtils
+import Blog.Models.Model
+import qualified Blog.Models.User as U
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)
-import Blog.Handlers.HandlersUtils
-import qualified Blog.Models.User as U
 
 getUsers :: Request -> Connection -> IO Response
 getUsers request =

@@ -1,9 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 
 module Blog.Handlers.Post
-  ( getPostsSimple
-  , getPostsFiltered
-  , getPostsBy
+  ( getPosts
   ) where
 
 import Blog.Exceptions.Exceptions
@@ -11,14 +10,57 @@ import Blog.Handlers.HandlersUtils
 import Blog.Models.Model
 import qualified Blog.Models.Post as P
 import qualified Blog.Models.PostDTO as PD
+import Control.Monad (join)
 import Data.Aeson
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple
 import Network.Wai
 import Prelude hiding (read)
 
-getPostsSimple :: Request -> Connection -> IO Response
-getPostsSimple request =
+getPosts :: Request -> Connection -> IO Response
+getPosts =
+  filterBy
+    [ ("author_name", PD.getPostsByAuthor)
+    , ("content_substr", PD.getPostsWithSubstrInContent)
+    , ("name_substr", PD.getPostsWithSubstrInName)
+    , ("tag", PD.getPostsWithTag)
+    , ("tags_in", PD.getPostsTagsIn)
+    , ("tags_all", PD.getPostsTagsAll)
+    , ("created_at", PD.getPostsDate)
+    , ("created_at__lt", PD.getPostsDateLt)
+    , ("created_at__gt", PD.getPostsDateGt)
+    , ("category", PD.getPostsByCategory)
+    , ("substr", PD.getPostsBySubstr)
+    ]
+
+filterBy ::
+     [( BS.ByteString
+      , BS.ByteString -> Maybe Integer -> Connection -> IO [PD.PostDTO])]
+  -> Request
+  -> Connection
+  -> IO Response
+filterBy filters request =
+  let query = queryString request
+      filt = foldl getFilter Nothing filters
+      getFilter Nothing (p, f) = (f, ) <$> join (lookup p query)
+      getFilter f _ = f
+   in maybe
+        (getPostsUnfiltered request)
+        (\(f, p) -> getPostsBy f p request)
+        filt
+
+getPostsBy ::
+     (BS.ByteString -> Maybe Integer -> Connection -> IO [PD.PostDTO])
+  -> BS.ByteString
+  -> Request
+  -> Connection
+  -> IO Response
+getPostsBy filtGet param request c =
+  let (page, _, _) = getAdditionalParams request
+   in respondJson <$> dtosToPosts c (filtGet param page c)
+
+getPostsUnfiltered :: Request -> Connection -> IO Response
+getPostsUnfiltered request =
   let (page, sortBy, _) = getAdditionalParams request
    in fmap respondJson . (\c -> dtosToPosts c $ read page sortBy c)
 
@@ -26,33 +68,3 @@ dtosToPosts :: Connection -> IO [PD.PostDTO] -> IO [P.Post]
 dtosToPosts c dtosIO = do
   dtos <- dtosIO
   sequence $ P.dtoToPost c <$> dtos
-
-getPostsFiltered :: Request -> Connection -> IO Response
-getPostsFiltered request =
-  let (page, _, _) = getAdditionalParams request
-      queryStr = queryString request
-   in case head queryStr of
-        ("author_name", Just author) ->
-          getPostsBy PD.getPostsByAuthor author page
-        ("content_substr", Just sub) ->
-          getPostsBy PD.getPostsWithSubstrInContent sub page
-        ("name_substr", Just sub) ->
-          getPostsBy PD.getPostsWithSubstrInName sub page
-        ("tag", Just tag) -> getPostsBy PD.getPostsWithTag tag page
-        ("tags_in", Just tags) -> getPostsBy PD.getPostsTagsIn tags page
-        ("tags_all", Just tags) -> getPostsBy PD.getPostsTagsAll tags page
-        ("created_at", Just date) -> getPostsBy PD.getPostsDate date page
-        ("created_at__lt", Just date) -> getPostsBy PD.getPostsDateLt date page
-        ("created_at__gt", Just date) -> getPostsBy PD.getPostsDateGt date page
-        ("category", Just cat) -> getPostsBy PD.getPostsByCategory cat page
-        ("substr", Just sub) -> getPostsBy PD.getPostsBySubstr sub page
-        _ -> const $ return notFound
-
-getPostsBy ::
-     (BS.ByteString -> Maybe Integer -> Connection -> IO [PD.PostDTO])
-  -> BS.ByteString
-  -> Maybe Integer
-  -> Connection
-  -> IO Response
-getPostsBy getFilt param page c =
-  respondJson <$> dtosToPosts c (getFilt param page c)

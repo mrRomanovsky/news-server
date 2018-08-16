@@ -19,48 +19,33 @@ import Network.Wai.Handler.Warp (run)
 
 routers :: Router
 routers =
-  addPostRouter (postPath ["posts", "*", "comments", "delete"]) deleteComment $
-  addPostRouter (postPath ["posts", "*", "comments"]) createComment $
-  addPostRouter (postPath ["users", "delete"]) deleteUser $
-  addPostRouter (postPath ["users"]) createUser $
-  addPostRouter (postPath ["tags", "update"]) updateTag $
-  addPostRouter (postPath ["tags", "delete"]) deleteTag $
-  addPostRouter (postPath ["tags"]) createTag $
-  addPostRouter (postPath ["drafts", "publish"]) publishDraft $
-  addPostRouter (postPath ["drafts", "update"]) updateDraft $
-  addPostRouter (postPath ["drafts", "delete"]) deleteDraft $
-  addPostRouter (postPath ["drafts"]) createDraft $
-  addPostRouter (postPath ["categories", "update"]) updateCategory $
-  addPostRouter (postPath ["categories", "delete"]) deleteCategory $
-  addPostRouter (postPath ["categories"]) createCategory $
-  addPostRouter (postPath ["authors", "update"]) updateAuthor $
-  addPostRouter (postPath ["authors", "delete"]) deleteAuthor $
-  addPostRouter (postPath ["authors"]) createAuthor $
-  addGetRouter (notFilteredGet ["posts", "*", "comments"]) getComments $
-  addGetRouter (filteredGetTo ["posts"]) getPostsFiltered $
-  addGetRouter (notFilteredGet ["drafts"]) getPostsSimple $
-  addGetRouter (notFilteredGet ["users"]) getPostsSimple $
-  addGetRouter (notFilteredGet ["posts"]) getPostsSimple $
-  addGetRouter (notFilteredGet ["categories"]) getCategories $
-  addGetRouter (notFilteredGet ["tags"]) getTags $
-  addGetRouter (notFilteredGet ["authors"]) getAuthors defaultRouter
+  addPostRouter (reqPath ["posts", "*", "comments", "delete"]) deleteComment $
+  addPostRouter (reqPath ["posts", "*", "comments"]) createComment $
+  addPostRouter (reqPath ["users", "delete"]) deleteUser $
+  addPostRouter (reqPath ["users"]) createUser $
+  addPostRouter (reqPath ["tags", "update"]) updateTag $
+  addPostRouter (reqPath ["tags", "delete"]) deleteTag $
+  addPostRouter (reqPath ["tags"]) createTag $
+  addPostRouter (reqPath ["drafts", "publish"]) publishDraft $
+  addPostRouter (reqPath ["drafts", "update"]) updateDraft $
+  addPostRouter (reqPath ["drafts", "delete"]) deleteDraft $
+  addPostRouter (reqPath ["drafts"]) createDraft $
+  addPostRouter (reqPath ["categories", "update"]) updateCategory $
+  addPostRouter (reqPath ["categories", "delete"]) deleteCategory $
+  addPostRouter (reqPath ["categories"]) createCategory $
+  addPostRouter (reqPath ["authors", "update"]) updateAuthor $
+  addPostRouter (reqPath ["authors", "delete"]) deleteAuthor $
+  addPostRouter (reqPath ["authors"]) createAuthor $
+  addGetRouter (reqPath ["posts", "*", "comments"]) getComments $
+  addGetRouter (reqPath ["drafts"]) getDrafts $
+  addGetRouter (reqPath ["users"]) getUsers $
+  addGetRouter (reqPath ["posts"]) getPosts $
+  addGetRouter (reqPath ["categories"]) getCategories $
+  addGetRouter (reqPath ["tags"]) getTags $
+  addGetRouter (reqPath ["authors"]) getAuthors defaultRouter
 
-postPath :: [Text] -> Request -> Bool
-postPath path = matchPath path . pathInfo
-
-filteredGetTo :: [Text] -> Request -> Bool
-filteredGetTo path request =
-  not (notFiltered $ queryString request) && pathInfo request == path
-
-notFilteredGet :: [Text] -> Request -> Bool
-notFilteredGet path request =
-  notFiltered (queryString request) && matchPath path (pathInfo request)
-
-notFiltered :: Query -> Bool
-notFiltered [] = True
-notFiltered (("page", p):qs) = True
-notFiltered (("sort_by", sB):qs) = True
-notFiltered _ = False
+reqPath :: [Text] -> Request -> Bool
+reqPath path = matchPath path . pathInfo
 
 matchPath :: [Text] -> [Text] -> Bool
 matchPath [] [] = True

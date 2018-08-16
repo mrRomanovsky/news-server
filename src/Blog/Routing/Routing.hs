@@ -19,29 +19,29 @@ import Network.Wai.Handler.Warp (run)
 
 routers :: Router
 routers =
-  addPostRouter (reqPath ["posts", "*", "comments", "delete"]) deleteComment $
-  addPostRouter (reqPath ["posts", "*", "comments"]) createComment $
   addPostRouter (reqPath ["users", "delete"]) deleteUser $
   addPostRouter (reqPath ["users"]) createUser $
-  addPostRouter (reqPath ["tags", "update"]) updateTag $
-  addPostRouter (reqPath ["tags", "delete"]) deleteTag $
-  addPostRouter (reqPath ["tags"]) createTag $
   addPostRouter (reqPath ["drafts", "publish"]) publishDraft $
   addPostRouter (reqPath ["drafts", "update"]) updateDraft $
   addPostRouter (reqPath ["drafts", "delete"]) deleteDraft $
   addPostRouter (reqPath ["drafts"]) createDraft $
+  addGetRouter (reqPath ["drafts"]) getDrafts $
+  addGetRouter (reqPath ["users"]) getUsers $
+  addPostRouter (reqPath ["posts", "*", "comments", "delete"]) deleteComment $
+  addPostRouter (reqPath ["posts", "*", "comments"]) createComment $
+  addGetRouter (reqPath ["posts", "*", "comments"]) getComments $
+  addGetRouter (reqPath ["posts"]) getPosts $
   addPostRouter (reqPath ["categories", "update"]) updateCategory $
   addPostRouter (reqPath ["categories", "delete"]) deleteCategory $
   addPostRouter (reqPath ["categories"]) createCategory $
+  addGetRouter (reqPath ["categories"]) getCategories $
+  addPostRouter (reqPath ["tags", "update"]) updateTag $
+  addPostRouter (reqPath ["tags", "delete"]) deleteTag $
+  addPostRouter (reqPath ["tags"]) createTag $
+  addGetRouter (reqPath ["tags"]) getTags $
   addPostRouter (reqPath ["authors", "update"]) updateAuthor $
   addPostRouter (reqPath ["authors", "delete"]) deleteAuthor $
   addPostRouter (reqPath ["authors"]) createAuthor $
-  addGetRouter (reqPath ["posts", "*", "comments"]) getComments $
-  addGetRouter (reqPath ["drafts"]) getDrafts $
-  addGetRouter (reqPath ["users"]) getUsers $
-  addGetRouter (reqPath ["posts"]) getPosts $
-  addGetRouter (reqPath ["categories"]) getCategories $
-  addGetRouter (reqPath ["tags"]) getTags $
   addGetRouter (reqPath ["authors"]) getAuthors defaultRouter
 
 reqPath :: [Text] -> Request -> Bool

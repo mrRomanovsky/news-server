@@ -19,9 +19,8 @@ import Blog.Handlers.User
 
 routers :: Router
 routers =
-  addPostRouter isCommentsDelete deleteComment $
-  addPostRouter isCommentsRequest createComment $
-  addGetRouter isCommentsRequest getComments $
+  addPostRouter (postPath ["posts", "*", "comments", "delete"]) deleteComment $
+  addPostRouter (postPath ["posts", "*", "comments"]) createComment $
   addPostRouter (postPath ["users", "delete"]) deleteUser $
   addPostRouter (postPath ["users"]) createUser $
   addPostRouter (postPath ["tags", "update"]) updateTag $
@@ -37,6 +36,7 @@ routers =
   addPostRouter (postPath ["authors", "update"]) updateAuthor $
   addPostRouter (postPath ["authors", "delete"]) deleteAuthor $
   addPostRouter (postPath ["authors"]) createAuthor $
+  addGetRouter (simpleGetTo ["posts", "*", "comments"]) getComments $
   addGetRouter (filteredGetTo ["posts"]) getPostsFiltered $
   addGetRouter (simpleGetTo ["drafts"]) getPostsSimple $
   addGetRouter (simpleGetTo ["users"]) getPostsSimple $
@@ -46,7 +46,7 @@ routers =
   addGetRouter (simpleGetTo ["authors"]) getAuthors defaultRouter
 
 postPath :: [Text] -> Request -> Bool
-postPath path = (== path) . pathInfo
+postPath path = matchPath path . pathInfo
 
 filteredGetTo :: [Text] -> Request -> Bool
 filteredGetTo path request =
@@ -54,7 +54,7 @@ filteredGetTo path request =
 
 simpleGetTo :: [Text] -> Request -> Bool
 simpleGetTo path request =
-  isSimpleGet (queryString request) && pathInfo request == path
+  isSimpleGet (queryString request) && matchPath path (pathInfo request)
 
 isSimpleGet :: Query -> Bool
 isSimpleGet [] = True
@@ -62,14 +62,9 @@ isSimpleGet (("page", p):qs) = True
 isSimpleGet (("sort_by", sB):qs) = True
 isSimpleGet _ = False
 
-isCommentsDelete :: Request -> Bool
-isCommentsDelete request =
-  case pathInfo request of
-    ["posts", pNumber, "comments", "delete"] -> True
-    _ -> False
-
-isCommentsRequest :: Request -> Bool
-isCommentsRequest request =
-  case pathInfo request of
-    ["posts", pNumber, "comments"] -> True
-    _ -> False
+matchPath :: [Text] -> [Text] -> Bool
+matchPath [] [] = True
+matchPath _ [] = False
+matchPath (x : xs) (y : ys)
+  | x == "*" || x == y = matchPath xs ys
+  | otherwise = False

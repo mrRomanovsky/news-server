@@ -9,7 +9,7 @@ import qualified Blog.Models.Author as A
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
-import Blog.ServerDB.DbRequests
+import Blog.Handlers.Authorization
 import Blog.Models.Model
 import Network.Wai
 import Prelude hiding (read)

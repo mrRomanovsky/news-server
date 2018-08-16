@@ -2,10 +2,11 @@
 
 module Blog.Exceptions.Exceptions
   ( handleRequestException
+  , notFound
   ) where
 
 import Control.Exception
-import Network.HTTP.Types (status500)
+import Network.HTTP.Types (status404, status500)
 import Network.Wai
 
 handleRequestException :: SomeException -> IO Response
@@ -20,3 +21,7 @@ errorOccured =
     status500
     [("Content-Type", "application/json")]
     "Error occured. Please, try again later"
+
+notFound :: Response
+notFound =
+  responseLBS status404 [("Content-Type", "text/plain")] "404 - Not Found"

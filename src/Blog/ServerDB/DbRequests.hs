@@ -9,7 +9,8 @@ import Data.Maybe (fromMaybe)
 import System.Environment
 import qualified Data.ByteString as B
 import Data.String (fromString)
-import Data.Text
+import qualified Data.Text as T
+import Data.List (isSuffixOf)
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
@@ -18,8 +19,6 @@ import Database.PostgreSQL.Simple.Types hiding (Query)
 import Blog.Models.Model
 import Network.HTTP.Types (Query, hAuthorization, status200, status404)
 import Network.Wai
-
-type AuthData = B.ByteString
 
 getConnection :: IO Connection
 getConnection = do
@@ -31,47 +30,9 @@ getConnection = do
       , connectPassword = dbPassword
       }
 
-getDraftAuthor :: Integer -> Connection -> IO Integer
-getDraftAuthor dId conn = do
-  authorId <- query conn "SELECT author_id FROM drafts WHERE draft_id = ?" [dId]
-  case authorId of
-    [[aId]] -> return aId
-    _ -> error "draft didn't have an author!"
-
-getAuthorId :: B.ByteString -> Connection -> IO (Maybe Integer)
-getAuthorId uId conn = do
-  authorId <-
-    query conn "SELECT author_id FROM authors WHERE \"user_id\" = ?" [uId]
-  case authorId of
-    [[aId]] -> return $ Just aId
-    _ -> return Nothing
-
-authResponse ::
-     Maybe AuthData -> (Connection -> IO Response) -> Connection -> IO Response
-authResponse auth respond conn = do
-  isAdmin <- authorizeAdmin auth conn
-  if isAdmin
-    then respond conn
-    else return notFound
-
-notFound :: Response
-notFound =
-  responseLBS status404 [("Content-Type", "text/plain")] "404 - Not Found"
-
-authorizeAdmin :: Maybe AuthData -> Connection -> IO Bool
-authorizeAdmin auth conn = maybe (return False) (`checkAdmin` conn) auth
-
-checkAdmin :: B.ByteString -> Connection -> IO Bool
-checkAdmin uId conn = do
-  adminUser <-
-    query conn "SELECT user_is_admin FROM users WHERE \"user_id\" = ?" [uId]
-  case adminUser of
-    [[True]] -> return True
-    _ -> return False
-
 getRecords ::
      FromRow m
-  => Text
+  => T.Text
   -> Maybe Integer
   -> Maybe B.ByteString
   -> Connection
@@ -84,9 +45,10 @@ getRecords table page sortParam conn =
 selectOrdered :: Database.PostgreSQL.Simple.Query
 selectOrdered = "SELECT * FROM ? ORDER BY ?"
 
-getDefaultOrder :: Text -> Text
-getDefaultOrder "categories" = "category_id"
-getDefaultOrder table = Data.Text.init table `append` "_id"
+getDefaultOrder :: T.Text -> T.Text
+getDefaultOrder table
+  |"ies" `T.isSuffixOf` table = T.init (T.init $ T.init table) `T.append` "y_id"
+  |otherwise = T.init table `T.append` "_id"
 
 paginate ::
      Database.PostgreSQL.Simple.Query
@@ -94,7 +56,7 @@ paginate ::
   -> Database.PostgreSQL.Simple.Query
 paginate q p =
   let offset = maybe 0 ((* 20) . (subtract 1)) p
-      qStr = Prelude.init $ Prelude.tail $ show q
+      qStr = init $ tail $ show q
    in fromString $ qStr ++ "OFFSET " ++ show offset ++ " LIMIT 20"
 
 paginatedQuery ::

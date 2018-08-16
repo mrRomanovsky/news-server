@@ -9,7 +9,7 @@ module Blog.Handlers.Post
 import Data.Aeson
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple
-import Blog.ServerDB.DbRequests
+import Blog.Exceptions.Exceptions
 import Blog.Models.Model
 import Network.Wai
 import qualified Blog.Models.Post as P

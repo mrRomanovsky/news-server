@@ -36,31 +36,31 @@ routers =
   addPostRouter (postPath ["authors", "update"]) updateAuthor $
   addPostRouter (postPath ["authors", "delete"]) deleteAuthor $
   addPostRouter (postPath ["authors"]) createAuthor $
-  addGetRouter (simpleGetTo ["posts", "*", "comments"]) getComments $
+  addGetRouter (notFilteredGet ["posts", "*", "comments"]) getComments $
   addGetRouter (filteredGetTo ["posts"]) getPostsFiltered $
-  addGetRouter (simpleGetTo ["drafts"]) getPostsSimple $
-  addGetRouter (simpleGetTo ["users"]) getPostsSimple $
-  addGetRouter (simpleGetTo ["posts"]) getPostsSimple $
-  addGetRouter (simpleGetTo ["categories"]) getCategories $
-  addGetRouter (simpleGetTo ["tags"]) getTags $
-  addGetRouter (simpleGetTo ["authors"]) getAuthors defaultRouter
+  addGetRouter (notFilteredGet ["drafts"]) getPostsSimple $
+  addGetRouter (notFilteredGet ["users"]) getPostsSimple $
+  addGetRouter (notFilteredGet ["posts"]) getPostsSimple $
+  addGetRouter (notFilteredGet ["categories"]) getCategories $
+  addGetRouter (notFilteredGet ["tags"]) getTags $
+  addGetRouter (notFilteredGet ["authors"]) getAuthors defaultRouter
 
 postPath :: [Text] -> Request -> Bool
 postPath path = matchPath path . pathInfo
 
 filteredGetTo :: [Text] -> Request -> Bool
 filteredGetTo path request =
-  not (isSimpleGet $ queryString request) && pathInfo request == path
+  not (notFiltered $ queryString request) && pathInfo request == path
 
-simpleGetTo :: [Text] -> Request -> Bool
-simpleGetTo path request =
-  isSimpleGet (queryString request) && matchPath path (pathInfo request)
+notFilteredGet :: [Text] -> Request -> Bool
+notFilteredGet path request =
+  notFiltered (queryString request) && matchPath path (pathInfo request)
 
-isSimpleGet :: Query -> Bool
-isSimpleGet [] = True
-isSimpleGet (("page", p):qs) = True
-isSimpleGet (("sort_by", sB):qs) = True
-isSimpleGet _ = False
+notFiltered :: Query -> Bool
+notFiltered [] = True
+notFiltered (("page", p):qs) = True
+notFiltered (("sort_by", sB):qs) = True
+notFiltered _ = False
 
 matchPath :: [Text] -> [Text] -> Bool
 matchPath [] [] = True

@@ -18,7 +18,7 @@ import Database.PostgreSQL.Simple.ToField
 import GHC.Generics
 
 data Category = Category
-  { categoryId :: CategoryId
+  { categoryId :: Maybe CategoryId
   , name :: Text
   , nestedCategories :: Maybe (Vector Integer)
   } deriving (Show, Generic)
@@ -65,7 +65,7 @@ instance Model Category CategoryId where
 
 instance FromJSON Category where
   parseJSON (Object v) =
-    Category <$> (v .: "categoryId" <|> pure (CategoryId (-1))) <*> v .: "name" <*>
+    Category <$> v .:? "categoryId" <*> v .: "name" <*>
     v .:? "parentId"
   parseJSON _ = mzero
 

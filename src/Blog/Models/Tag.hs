@@ -20,7 +20,7 @@ import GHC.Generics
 import Blog.Models.Model
 
 data Tag = Tag
-  { tagId :: TagId
+  { tagId :: Maybe TagId
   , tagName :: Text
   } deriving (Show, Generic)
 
@@ -48,7 +48,7 @@ instance ToJSON Tag
 
 instance FromJSON Tag where
   parseJSON (Object v) =
-    Tag <$> (v .: "tagId" <|> pure (TagId (-1))) <*> v .: "tagName"
+    Tag <$> v .:? "tagId" <*> v .: "tagName"
   parseJSON _ = mzero
 
 instance FromRow Tag where

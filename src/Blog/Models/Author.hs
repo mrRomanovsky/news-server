@@ -18,7 +18,7 @@ import GHC.Generics
 import Blog.ServerDB.DbRequests
 
 data Author = Author
-  { authorId :: AuthorId
+  { authorId :: Maybe AuthorId
   , userId :: Integer
   , desc :: Maybe Text
   } deriving (Show, Generic)
@@ -45,7 +45,7 @@ instance ToField AuthorId where
 
 instance FromJSON Author where
   parseJSON (Object v) =
-    Author <$> (v .: "authorId" <|> pure (AuthorId (-1))) <*> v .: "userId" <*>
+    Author <$> v .:? "authorId" <*> v .: "userId" <*>
     v .:? "desc"
   parseJSON _ = mzero
 

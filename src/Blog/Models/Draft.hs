@@ -23,7 +23,7 @@ import qualified Blog.Models.PostDTO as P
 import qualified Blog.Models.User as U
 
 data Draft = Draft
-  { draftId :: DraftId
+  { draftId :: Maybe DraftId
   , postId :: Maybe Integer
   , authorId :: Integer
   , postName :: Text
@@ -107,7 +107,7 @@ instance Model Draft DraftId where
 
 instance FromJSON Draft where
   parseJSON (Object v) =
-    Draft <$> (v .: "draftId" <|> pure (DraftId (-1))) <*> v .:? "postId" <*>
+    Draft <$> v .:? "draftId" <*> v .:? "postId" <*>
     pure (-1) <*>
     v .: "postName" <*>
     v .:? "creationTime" <*>

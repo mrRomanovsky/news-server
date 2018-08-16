@@ -26,7 +26,7 @@ import Blog.Models.Model
 import Blog.ServerDB.DbRequests
 
 data User = User
-  { userId :: UserId
+  { userId :: Maybe UserId
   , name :: Text
   , surname :: Text
   , avatar :: Text
@@ -67,7 +67,7 @@ instance ToJSON T.LocalTimestamp where
 
 instance FromJSON User where
   parseJSON (Object v) =
-    User (UserId (-1)) <$> v .: "name" <*> v .: "surname" <*> v .: "avatar" <*>
+    User <$> v .:? "userId" <*> v .: "name" <*> v .: "surname" <*> v .: "avatar" <*>
     (pure $ getLocTimestamp "2017-07-28 14:14:14") <*>
     pure False --replace default data with maybe
   parseJSON _ = mzero

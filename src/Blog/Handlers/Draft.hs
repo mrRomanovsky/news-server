@@ -14,6 +14,7 @@ import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.Draft as D
 import Blog.Models.Model
 import Blog.ServerDB.Author
+import Blog.ServerDB.DbRequests
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Database.PostgreSQL.Simple
@@ -26,21 +27,11 @@ type DraftIdAction = Either String D.DraftId -> Connection -> IO Response
 getDrafts :: Request -> Connection -> IO Response
 getDrafts request =
   let (page, sortBy, auth) = getAdditionalParams request
-   in fmap respondJson . getDraftsAuth auth (getData page sortBy)
-
-getDraftsAuth ::
-     Maybe AuthData
-  -> (Connection -> IO [D.Draft])
-  -> Connection
-  -> IO [D.Draft]
-getDraftsAuth Nothing _ _ = return []
-getDraftsAuth (Just auth) getDrafts conn = do
-  authorId <- getAuthorId auth conn
-  drafts <- getDrafts conn
-  return $ maybe [] (`draftsForAuthor` drafts) authorId
-
-draftsForAuthor :: Integer -> [D.Draft] -> [D.Draft]
-draftsForAuthor aId = filter ((== aId) . D.authorId)
+   in case auth of
+        (Just aId) ->
+          fmap respondJson .
+          (getRecordsWhere "drafts" page sortBy (Just ("author_id", aId)) :: Connection -> IO [D.Draft])
+        _ -> const $ return notFound
 
 createDraft :: Request -> Connection -> IO Response
 createDraft = draftModelAction createModel

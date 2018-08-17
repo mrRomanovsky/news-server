@@ -8,6 +8,7 @@ import Blog.Models.Model
 import Control.Applicative
 import Control.Monad
 import qualified Data.ByteString as B
+import Data.ByteString.Char8 (unpack)
 import Data.List (isSuffixOf)
 import Data.Maybe (fromMaybe)
 import Data.String (fromString)
@@ -20,6 +21,8 @@ import Database.PostgreSQL.Simple.Types hiding (Query)
 import Network.HTTP.Types (Query, hAuthorization, status200, status404)
 import Network.Wai
 import System.Environment
+
+type WhereParam = (B.ByteString, B.ByteString)
 
 getConnection :: ServerConfig -> IO Connection
 getConnection conf =
@@ -37,13 +40,30 @@ getRecords ::
   -> Maybe B.ByteString
   -> Connection
   -> IO [m]
-getRecords table page sortParam conn =
+getRecords table page sortParam = getRecordsWhere table page sortParam Nothing
+
+getRecordsWhere ::
+     FromRow m
+  => T.Text
+  -> Maybe Integer
+  -> Maybe B.ByteString
+  -> Maybe WhereParam
+  -> Connection
+  -> IO [m]
+getRecordsWhere table page sortParam whereParam conn = do
   let defSort = getDefaultOrder table
       sortP = Identifier $ maybe defSort decodeUtf8 sortParam
-   in query conn (paginate selectOrdered page) (Identifier table, sortP)
+      queryGet = paginate (orderBy $ addParam select whereParam) page
+  print queryGet
+  query conn queryGet (Identifier table, sortP)
 
-selectOrdered :: Database.PostgreSQL.Simple.Query
-selectOrdered = "SELECT * FROM ? ORDER BY ?"
+select :: Database.PostgreSQL.Simple.Query
+select = "SELECT * FROM ?"
+
+orderBy :: Database.PostgreSQL.Simple.Query -> Database.PostgreSQL.Simple.Query
+orderBy q =
+  let qStr = getQueryStr q
+   in fromString $ qStr ++ " ORDER BY ?"
 
 getDefaultOrder :: T.Text -> T.Text
 getDefaultOrder table
@@ -51,14 +71,25 @@ getDefaultOrder table
     T.init (T.init $ T.init table) `T.append` "y_id"
   | otherwise = T.init table `T.append` "_id"
 
+addParam ::
+     Database.PostgreSQL.Simple.Query
+  -> Maybe WhereParam
+  -> Database.PostgreSQL.Simple.Query
+addParam q Nothing = q
+addParam q (Just (par, val)) =
+  let qStr = getQueryStr q
+      p = unpack par
+      v = unpack val
+   in fromString $ qStr ++ " WHERE " ++ p ++ " = " ++ v
+
 paginate ::
      Database.PostgreSQL.Simple.Query
   -> Maybe Page
   -> Database.PostgreSQL.Simple.Query
 paginate q p =
   let offset = maybe 0 ((* 20) . (subtract 1)) p
-      qStr = init $ tail $ show q
-   in fromString $ qStr ++ "OFFSET " ++ show offset ++ " LIMIT 20"
+      qStr = getQueryStr q
+   in fromString $ qStr ++ " OFFSET " ++ show offset ++ " LIMIT 20"
 
 paginatedQuery ::
      (FromRow m, ToRow q)
@@ -69,3 +100,6 @@ paginatedQuery ::
   -> IO [m]
 paginatedQuery queryToPaginate params page conn =
   query conn (paginate queryToPaginate page) params
+
+getQueryStr :: Database.PostgreSQL.Simple.Query -> String
+getQueryStr = init . tail . show

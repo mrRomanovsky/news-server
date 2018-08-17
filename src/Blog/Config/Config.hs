@@ -21,7 +21,7 @@ getConfig = do
   dbName <- fromMaybe undefined <$> lookupEnv "DB_NAME"
   dbUser <- fromMaybe undefined <$> lookupEnv "DB_USER"
   dbPassword <- fromMaybe undefined <$> lookupEnv "DB_PASSW"
-  logLevelStr <- fromMaybe "None" <$> lookupEnv "LOG_LEVEL"
+  logLevelStr <- fromMaybe "Warning" <$> lookupEnv "LOG_LEVEL"
   let logLevel = fromMaybe undefined $ getLogLevel logLevelStr
   logFile <- fromMaybe "news-server.log" <$> lookupEnv "LOG_FILE"
   portStr <- fromMaybe "3000" <$> lookupEnv "APP_PORT"

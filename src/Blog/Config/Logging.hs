@@ -4,12 +4,14 @@ module Blog.Config.Logging
   ) where
 
 data Logging
-  = None
-  | Requests
-  | Debug
+  = Debug
+  | Info
+  | Warning
+  | Error
   deriving (Eq, Ord)
 
 getLogLevel :: String -> Maybe Logging
-getLogLevel "None" = Just None
-getLogLevel "Requests" = Just Requests
 getLogLevel "Debug" = Just Debug
+getLogLevel "Info" = Just Info
+getLogLevel "Warning" = Just Warning
+getLogLevel "Error" = Just Error

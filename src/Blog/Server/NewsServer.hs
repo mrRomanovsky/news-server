@@ -12,11 +12,11 @@ import Network.Wai
 
 newsServer :: ServerConfig -> Application
 newsServer conf request respond = do
-  when (logLevel conf >= Requests) $ writeRequestLog request conf
+  when (logLevel conf <= Info) $ writeRequestLog request conf
   conn <- getConnection conf
   response <- catch (routers request conn) $ handleRequestException conf
   rResult <- respond response
-  when (logLevel conf >= Requests) $ writeResponseLog response conf
+  when (logLevel conf <= Info) $ writeResponseLog response conf
   close conn
   return rResult
 

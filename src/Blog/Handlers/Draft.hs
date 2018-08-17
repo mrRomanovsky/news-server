@@ -26,7 +26,7 @@ type DraftIdAction = Either String D.DraftId -> Connection -> IO Response
 getDrafts :: Request -> Connection -> IO Response
 getDrafts request =
   let (page, sortBy, auth) = getAdditionalParams request
-   in fmap respondJson . getDraftsAuth auth (read page sortBy)
+   in fmap respondJson . getDraftsAuth auth (getData page sortBy)
 
 getDraftsAuth ::
      Maybe AuthData

@@ -60,7 +60,7 @@ instance ToField PostId where
 
 instance Model PostDTO PostId where
   create = error "Sorry, this feature is not implemented yet"
-  read = getRecords "posts"
+  getData = getRecords "posts"
   update = error "Sorry, this feature is not implemented yet"
   delete = error "Sorry, this feature is not implemented yet"
 

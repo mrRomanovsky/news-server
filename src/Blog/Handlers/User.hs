@@ -16,7 +16,7 @@ import Prelude hiding (read)
 getUsers :: Request -> Connection -> IO Response
 getUsers request =
   let (page, sortBy, _) = getAdditionalParams request
-   in fmap respondJson . (read page sortBy :: Connection -> IO [U.User])
+   in fmap respondJson . (getData page sortBy :: Connection -> IO [U.User])
 
 createUser :: Request -> Connection -> IO Response
 createUser request = actionWithBody request createUserBs

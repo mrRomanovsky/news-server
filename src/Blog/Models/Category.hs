@@ -49,7 +49,7 @@ instance Model Category CategoryId where
       conn
       "INSERT INTO categories(category_name, category_nested_categories) values (?,?)"
       (n, pId)
-  read = getRecords "categories"
+  getData = getRecords "categories"
   update Category { categoryId = cId
                   , Blog.Models.Category.name = n
                   , nestedCategories = pId

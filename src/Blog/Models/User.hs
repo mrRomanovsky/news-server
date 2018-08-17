@@ -80,7 +80,7 @@ instance Model User UserId where
       conn
       "INSERT INTO users(\"user_name\", user_surname, user_avatar, user_is_admin) values (?, ?, ?, FALSE)"
       (n, s, a)
-  read = getRecords ("users" :: Text)
+  getData = getRecords ("users" :: Text)
   update = error "Sorry, this feature is not implemented yet"
   delete uId conn =
     void $ execute conn "DELETE FROM users WHERE \"user_id\" = ?" [uId]

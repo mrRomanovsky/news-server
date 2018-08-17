@@ -17,7 +17,7 @@ import Prelude hiding (read)
 getCategories :: Request -> Connection -> IO Response
 getCategories request =
   let (page, sortBy, _) = getAdditionalParams request
-   in fmap respondJson . (read page sortBy :: Connection -> IO [C.Category])
+   in fmap respondJson . (getData page sortBy :: Connection -> IO [C.Category])
 
 createCategory :: Request -> Connection -> IO Response
 createCategory request =

@@ -19,7 +19,7 @@ getAuthors :: Request -> Connection -> IO Response
 getAuthors request =
   let (page, sortBy, auth) = getAdditionalParams request
    in authResponse auth $
-      fmap respondJson . (read page sortBy :: Connection -> IO [A.Author])
+      fmap respondJson . (getData page sortBy :: Connection -> IO [A.Author])
 
 createAuthor :: Request -> Connection -> IO Response
 createAuthor request =

@@ -56,7 +56,7 @@ instance Model Author AuthorId where
       conn
       "INSERT INTO authors(\"user_id\", author_desc) values (?,?)"
       (uId, aDesc)
-  read = getRecords "authors"
+  getData = getRecords "authors"
   update Author {authorId = aId, Blog.Models.Author.userId = uId, desc = aDesc} conn =
     void $
     execute

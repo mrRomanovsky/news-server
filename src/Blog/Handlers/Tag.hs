@@ -17,7 +17,7 @@ import Prelude hiding (read)
 getTags :: Request -> Connection -> IO Response
 getTags request =
   let (page, sortBy, _) = getAdditionalParams request
-   in fmap respondJson . (read page sortBy :: Connection -> IO [T.Tag])
+   in fmap respondJson . (getData page sortBy :: Connection -> IO [T.Tag])
 
 createTag :: Request -> Connection -> IO Response
 createTag request =

@@ -16,6 +16,6 @@ class (ToJSON m, FromRow m) =>
   , id -> m
   where
   create :: m -> Connection -> IO ()
-  read :: Maybe Page -> Maybe B.ByteString -> Connection -> IO [m]
+  getData :: Maybe Page -> Maybe B.ByteString -> Connection -> IO [m]
   update :: m -> Connection -> IO ()
   delete :: Model m id => id -> Connection -> IO ()

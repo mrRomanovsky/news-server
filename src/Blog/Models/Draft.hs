@@ -77,7 +77,7 @@ instance Model Draft DraftId where
              conn
              "INSERT INTO drafts(post_id, author_id, draft_name, category_id, draft_tags, draft_text_content, draft_main_photo, draft_additional_photos) values (?, ?, ?, ?, ?, ?, ?, ?)"
              (pId, aId, dName, cId, dTags, dText, dPhoto, dAddPhotos)
-  read = getRecords "drafts"
+  getData = getRecords "drafts"
   update Draft { draftId = dId
                , postId = pId
                , authorId = aId

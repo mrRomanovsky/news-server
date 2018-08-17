@@ -55,7 +55,7 @@ instance FromRow Tag where
 instance Model Tag TagId where
   create Tag {tagName = n} conn =
     void $ execute conn "INSERT INTO tags(tag_name) values (?)" [n]
-  read = getRecords "tags"
+  getData = getRecords "tags"
   update Tag {tagId = tId, tagName = tName} conn =
     void $ execute conn "UPDATE tags SET tag_name=? WHERE tag_id=?" (tName, tId)
   delete tId conn = void $ execute conn "DELETE FROM tags WHERE tag_id=?" [tId]

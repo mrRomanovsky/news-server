@@ -62,7 +62,7 @@ getPostsBy filtGet param request c =
 getPostsUnfiltered :: Request -> Connection -> IO Response
 getPostsUnfiltered request =
   let (page, sortBy, _) = getAdditionalParams request
-   in fmap respondJson . (\c -> dtosToPosts c $ read page sortBy c)
+   in fmap respondJson . (\c -> dtosToPosts c $ getData page sortBy c)
 
 dtosToPosts :: Connection -> IO [PD.PostDTO] -> IO [P.Post]
 dtosToPosts c dtosIO = do

@@ -18,11 +18,15 @@ data ServerConfig = ServerConfig
 
 getConfig :: IO ServerConfig
 getConfig = do
-  dbName <- fromMaybe undefined <$> lookupEnv "DB_NAME"
-  dbUser <- fromMaybe undefined <$> lookupEnv "DB_USER"
-  dbPassword <- fromMaybe undefined <$> lookupEnv "DB_PASSW"
+  dbName <-
+    fromMaybe (error "database name not specified!") <$> lookupEnv "DB_NAME"
+  dbUser <- fromMaybe (error "user name not specified!") <$> lookupEnv "DB_USER"
+  dbPassword <-
+    fromMaybe (error "database password not specified!") <$>
+    lookupEnv "DB_PASSW"
   logLevelStr <- fromMaybe "Warning" <$> lookupEnv "LOG_LEVEL"
-  let logLevel = fromMaybe undefined $ getLogLevel logLevelStr
+  let logLevel =
+        fromMaybe (error "incorrect log level!") $ getLogLevel logLevelStr
   logFile <- fromMaybe "news-server.log" <$> lookupEnv "LOG_FILE"
   portStr <- fromMaybe "3000" <$> lookupEnv "APP_PORT"
   let port = parsePort portStr

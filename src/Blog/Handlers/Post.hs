@@ -41,9 +41,9 @@ filterBy ::
   -> IO Response
 filterBy filters request =
   let query = queryString request
-      filt = foldl getFilter Nothing filters
-      getFilter Nothing (p, f) = (f, ) <$> join (lookup p query)
-      getFilter f _ = f
+      filt = foldr getFilter Nothing filters
+      getFilter (p, f) Nothing = (f, ) <$> join (lookup p query)
+      getFilter _ f = f
    in maybe
         (getPostsUnfiltered request)
         (\(f, p) -> getPostsBy f p request)

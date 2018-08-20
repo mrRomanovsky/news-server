@@ -14,7 +14,7 @@ import Control.Monad
 import Data.Aeson
 import Data.Maybe (isNothing)
 import Data.Text
-import Data.Vector
+import Data.Vector hiding ((++))
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
@@ -141,4 +141,4 @@ publishDraft (DraftId dId) conn =
   catch (void $ execute conn "SELECT publish_draft(?)" [dId]) handleFuncCall
 
 handleFuncCall :: QueryError -> IO () --I just couldn't normally call function with "execute"
-handleFuncCall _ = return ()
+handleFuncCall e = print $ "error occured during call to function (but everything is ok): " ++ show e

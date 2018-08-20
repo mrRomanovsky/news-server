@@ -4,6 +4,7 @@ module Blog.Config.Config
   ) where
 
 import Blog.Config.Logging
+import Text.Read (readMaybe)
 import Data.Maybe
 import System.Environment
 
@@ -26,7 +27,7 @@ getConfig = do
     lookupEnv "DB_PASSW"
   logLevelStr <- fromMaybe "Warning" <$> lookupEnv "LOG_LEVEL"
   let logLevel =
-        fromMaybe (error "incorrect log level!") $ getLogLevel logLevelStr
+        fromMaybe (error "incorrect log level!") $ readMaybe logLevelStr
   logFile <- fromMaybe "news-server.log" <$> lookupEnv "LOG_FILE"
   portStr <- fromMaybe "3000" <$> lookupEnv "APP_PORT"
   let port = parsePort portStr

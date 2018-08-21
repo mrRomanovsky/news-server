@@ -5,22 +5,13 @@ module Blog.ServerDB.DbRequests where
 
 import Blog.Config.Config
 import Blog.Models.Model
-import Control.Applicative
-import Control.Monad
 import qualified Data.ByteString as B
 import Data.ByteString.Char8 (unpack)
-import Data.List (isSuffixOf)
-import Data.Maybe (fromMaybe)
 import Data.String (fromString)
 import qualified Data.Text as T
 import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromField
-import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Types hiding (Query)
-import Network.HTTP.Types (Query, hAuthorization, status200, status404)
-import Network.Wai
-import System.Environment
 
 type WhereParam = (B.ByteString, B.ByteString)
 
@@ -87,7 +78,7 @@ paginate ::
   -> Maybe Page
   -> Database.PostgreSQL.Simple.Query
 paginate q p =
-  let offset = maybe 0 ((* 20) . (subtract 1)) p
+  let offset = maybe 0 ((* 20) . subtract 1) p
       qStr = getQueryStr q
    in fromString $ qStr ++ " OFFSET " ++ show offset ++ " LIMIT 20"
 

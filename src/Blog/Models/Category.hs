@@ -6,7 +6,6 @@ module Blog.Models.Category where
 
 import Blog.Models.Model
 import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Control.Monad
 import Data.Aeson
 import Data.Text

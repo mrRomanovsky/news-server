@@ -4,9 +4,9 @@ module Blog.Config.Config
   ) where
 
 import Blog.Config.Logging
-import Text.Read (readMaybe)
 import Data.Maybe
 import System.Environment
+import Text.Read (readMaybe)
 
 data ServerConfig = ServerConfig
   { dbName :: String

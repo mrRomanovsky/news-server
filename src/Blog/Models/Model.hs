@@ -6,7 +6,6 @@ module Blog.Models.Model where
 import Data.Aeson
 import qualified Data.ByteString as B
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.Types
 
 type Page = Integer --for pagination
 

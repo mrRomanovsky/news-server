@@ -9,10 +9,8 @@ module Blog.Handlers.Draft
   ) where
 
 import Blog.Exceptions.Exceptions
-import Blog.Handlers.Authorization
 import Blog.Handlers.HandlersUtils
 import qualified Blog.Models.Draft as D
-import Blog.Models.Model
 import Blog.ServerDB.Author
 import Blog.ServerDB.DbRequests
 import Data.Aeson
@@ -44,9 +42,7 @@ setDraftAuthor aId d = d {D.authorId = aId}
 
 deleteDraft :: Request -> Connection -> IO Response
 deleteDraft request c = do
-  let auth = lookup hAuthorization $ requestHeaders request
-  dId <- strictRequestBody request
-  aId <- maybe (return Nothing) (`getAuthorId` c) auth
+  (auth, dId, aId) <- getDraftData request c
   maybe (return notFound) (\a -> draftIdAction dId a deleteModel c) aId
 
 updateDraft :: Request -> Connection -> IO Response
@@ -65,10 +61,14 @@ draftModelAction act request c = do
 
 publishDraft :: Request -> Connection -> IO Response
 publishDraft request c = do
+  (auth, dId, aId) <- getDraftData request c
+  maybe (return notFound) (\a -> draftIdAction dId a publishDraftRequest c) aId
+
+getDraftData request c = do
   let auth = lookup hAuthorization $ requestHeaders request
   dId <- strictRequestBody request
   aId <- maybe (return Nothing) (`getAuthorId` c) auth
-  maybe (return notFound) (\a -> draftIdAction dId a publishDraftRequest c) aId
+  return (auth, dId, aId)
 
 draftIdAction ::
      B.ByteString -> Integer -> DraftIdAction -> Connection -> IO Response

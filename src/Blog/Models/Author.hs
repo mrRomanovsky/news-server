@@ -5,9 +5,7 @@
 module Blog.Models.Author where
 
 import Blog.Models.Model
-import Blog.Models.User
 import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Control.Monad
 import Data.Aeson
 import Data.Text

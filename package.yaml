@@ -34,6 +34,9 @@ dependencies:
 library:
   source-dirs:
     - src
+  ghc-options:
+    - -Wincomplete-patterns
+    - -Wunused-imports
 
 executables:
   news-server-exe:
@@ -43,6 +46,8 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wincomplete-patterns
+    - -Wunused-imports
     dependencies:
     - news-server
 

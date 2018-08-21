@@ -5,10 +5,8 @@
 module Blog.Models.Draft where
 
 import Blog.Models.Model
-import qualified Blog.Models.PostDTO as P
-import qualified Blog.Models.User as U
+import Blog.Models.PostDTO ()
 import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Control.Exception
 import Control.Monad
 import Data.Aeson
@@ -141,4 +139,6 @@ publishDraft (DraftId dId) conn =
   catch (void $ execute conn "SELECT publish_draft(?)" [dId]) handleFuncCall
 
 handleFuncCall :: QueryError -> IO () --I just couldn't normally call function with "execute"
-handleFuncCall e = print $ "error occured during call to function (but everything is ok): " ++ show e
+handleFuncCall e =
+  print $
+  "error occured during call to function (but everything is ok): " ++ show e

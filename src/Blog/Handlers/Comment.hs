@@ -7,13 +7,10 @@ module Blog.Handlers.Comment
   ) where
 
 import Blog.Handlers.HandlersUtils
-import Blog.Models.Model
 import Blog.Models.PostDTO as P
-import Data.Aeson
-import qualified Data.ByteString.Lazy as B
 import Data.Text
 import Database.PostgreSQL.Simple
-import Network.HTTP.Types (hAuthorization, status200)
+import Network.HTTP.Types (status200)
 import Network.Wai
 import Prelude hiding (read)
 

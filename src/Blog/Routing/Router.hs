@@ -1,12 +1,9 @@
 module Blog.Routing.Router where
 
 import Blog.Exceptions.Exceptions
-import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Simple
-import Network.HTTP.Types (Query, methodGet, methodPost)
+import Network.HTTP.Types (methodGet, methodPost)
 import Network.Wai
-import Network.Wai.Handler.Warp (run)
-import System.Environment
 
 type Router = Request -> Connection -> IO Response
 

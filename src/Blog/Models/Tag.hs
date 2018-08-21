@@ -7,16 +7,13 @@ module Blog.Models.Tag where
 
 import Blog.Models.Model
 import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Control.Monad
 import Data.Aeson
 import Data.Text
-import Data.Text.Encoding (decodeUtf8)
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.ToField
-import Database.PostgreSQL.Simple.Types
 import GHC.Generics
 
 data Tag = Tag

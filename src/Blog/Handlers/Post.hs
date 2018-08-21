@@ -5,13 +5,11 @@ module Blog.Handlers.Post
   ( getPosts
   ) where
 
-import Blog.Exceptions.Exceptions
 import Blog.Handlers.HandlersUtils
 import Blog.Models.Model
 import qualified Blog.Models.Post as P
 import qualified Blog.Models.PostDTO as PD
 import Control.Monad (join)
-import Data.Aeson
 import qualified Data.ByteString as BS
 import Database.PostgreSQL.Simple
 import Network.Wai

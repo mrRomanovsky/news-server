@@ -8,11 +8,9 @@ module Blog.Models.User where
 
 import Blog.Models.Model
 import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Control.Monad
 import Data.Aeson
 import Data.Binary.Builder (toLazyByteString)
-import qualified Data.ByteString.Lazy as B
 import Data.Text hiding (head)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.Lazy (toStrict)
@@ -22,7 +20,6 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
 import Database.PostgreSQL.Simple.ToField
-import Database.PostgreSQL.Simple.Types
 import GHC.Generics
 
 data User = User
@@ -67,8 +64,8 @@ instance ToJSON T.LocalTimestamp where
 instance FromJSON User where
   parseJSON (Object v) =
     User <$> v .:? "userId" <*> v .: "name" <*> v .: "surname" <*> v .: "avatar" <*>
-    (pure $ getLocTimestamp "2017-07-28 14:14:14") <*>
-    pure False --replace default data with maybe
+    pure (getLocTimestamp "2017-07-28 14:14:14") <*>
+    pure False
   parseJSON _ = mzero
 
 instance ToJSON User

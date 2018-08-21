@@ -7,23 +7,13 @@ module Blog.Models.Post where
 
 import Blog.Models.Author
 import Blog.Models.Category
-import Blog.Models.Model
 import qualified Blog.Models.PostDTO as DT
 import Blog.Models.Tag
-import Blog.Models.User
-import Blog.ServerDB.DbRequests
-import Control.Applicative
 import Data.Aeson
-import qualified Data.ByteString as B
-import Data.String (fromString)
 import Data.Text hiding (head, takeWhile)
-import Data.Text.Encoding (decodeUtf8)
 import Data.Vector hiding ((++), head)
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromField
-import Database.PostgreSQL.Simple.FromRow
 import qualified Database.PostgreSQL.Simple.Time as T
-import Database.PostgreSQL.Simple.ToField
 import GHC.Generics
 import Prelude hiding (takeWhile)
 

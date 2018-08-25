@@ -26,8 +26,7 @@ getConfig = do
   let logLevel =
         fromMaybe (error "incorrect log level!") $ readMaybe logLevelStr
   logFile <- getEnvDef "news-server.log" "LOG_FILE"
-  portStr <- getEnvDef "3000" "APP_PORT"
-  let port = parsePort portStr
+  port <- read <$> getEnvDef "3000" "APP_PORT"
   return $ ServerConfig dbName dbUser dbPassword logLevel logFile port
 
 getEnvErr :: String -> String -> IO String
@@ -35,9 +34,3 @@ getEnvErr errMes envVar = fromMaybe (error errMes) <$> lookupEnv envVar
 
 getEnvDef :: String -> String -> IO String
 getEnvDef defVal envVar = fromMaybe defVal <$> lookupEnv envVar
-
-parsePort :: String -> Int
-parsePort s =
-  case reads s of
-    [(port, _)] -> port
-    _ -> error "port should be an integer number!"
